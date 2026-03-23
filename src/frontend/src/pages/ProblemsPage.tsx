@@ -2,13 +2,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, ChevronRight, Code, Lightbulb, Send } from "lucide-react";
+import {
+  BookOpen,
+  Calendar,
+  ChevronRight,
+  Code,
+  Home,
+  LayoutDashboard,
+  Lightbulb,
+  Send,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 import { CODING_PROBLEMS, type CodingProblem } from "../data/problems";
-import { useResponseQueue } from "../hooks/useResponseQueue";
 
 const ACHIEVEMENTS = [
   { icon: "🚀", name: "First Steps", desc: "Complete your first problem" },
@@ -24,6 +32,151 @@ const DIFF_COLORS = {
   Medium: "bg-yellow-100 text-yellow-700 border-yellow-200",
   Hard: "bg-red-100 text-red-700 border-red-200",
 };
+
+async function askOpenAI({
+  userMessage,
+  companionName,
+  problemTitle,
+  problemHint,
+  openaiKey,
+  claudeKey,
+}: {
+  userMessage: string;
+  companionName: string;
+  problemTitle: string;
+  problemHint: string;
+  openaiKey: string;
+  claudeKey: string;
+}): Promise<string> {
+  const systemPrompt = `You are ${companionName}, a friendly and encouraging AI study companion helping a student solve the coding problem "${problemTitle}". 
+You are supportive, warm, and give clear technical guidance. If asked for a hint, use this hint: "${problemHint}". 
+Keep responses concise (2-3 sentences max). Use light emojis for warmth.`;
+
+  // Try Claude first
+  if (claudeKey) {
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": claudeKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5",
+          max_tokens: 200,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userMessage }],
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.content?.[0]?.text ?? "";
+      }
+    } catch (_) {}
+  }
+
+  // Fall back to OpenAI
+  if (openaiKey) {
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          max_tokens: 200,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+          ],
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content ?? "";
+      }
+    } catch (_) {}
+  }
+
+  // Local fallback
+  const lower = userMessage.toLowerCase();
+  if (
+    lower.includes("hint") ||
+    lower.includes("help") ||
+    lower.includes("stuck")
+  ) {
+    return `💡 Here's a hint: ${problemHint}`;
+  }
+  return "You're doing great! Keep going — I believe in you! 💕 (Add your API key in Dashboard for smarter AI answers!)";
+}
+
+function BottomNav() {
+  const { setPage, setCurrentProblemId } = useApp();
+  const items = [
+    {
+      label: "Chat",
+      icon: <Home className="w-5 h-5" />,
+      action: () => {
+        setCurrentProblemId(null);
+        setPage("study");
+      },
+    },
+    {
+      label: "Study",
+      icon: <BookOpen className="w-5 h-5" />,
+      action: () => {
+        setCurrentProblemId(null);
+        setPage("study");
+      },
+    },
+    {
+      label: "Events",
+      icon: <Calendar className="w-5 h-5" />,
+      action: () => {
+        setCurrentProblemId(null);
+        setPage("study");
+      },
+    },
+    {
+      label: "Problems",
+      icon: <Code className="w-5 h-5" />,
+      action: () => setCurrentProblemId(null),
+      active: true,
+    },
+    {
+      label: "Dashboard",
+      icon: <LayoutDashboard className="w-5 h-5" />,
+      action: () => {
+        setCurrentProblemId(null);
+        setPage("dashboard");
+      },
+    },
+  ];
+  return (
+    <nav className="bg-card border-t border-border shrink-0">
+      <div className="flex items-stretch">
+        {items.map((item) => (
+          <button
+            key={item.label}
+            type="button"
+            onClick={item.action}
+            className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-xs font-medium transition-colors ${
+              item.active
+                ? "text-primary border-t-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
 
 function ProblemCard({
   problem,
@@ -70,11 +223,10 @@ function ProblemCard({
 }
 
 function ProblemSolver({ problem }: { problem: CodingProblem }) {
-  const { user, setUser, setPage, setCurrentProblemId } = useApp();
+  const { user, setUser, openaiKey, claudeKey } = useApp();
   const preset =
     COMPANION_PRESETS.find((p) => p.personality === user.personality) ??
     COMPANION_PRESETS[0];
-  const pick = useResponseQueue();
 
   const [code, setCode] = useState(problem.template);
   const [submitted, setSubmitted] = useState(false);
@@ -96,12 +248,15 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   });
 
-  // Initial companion greeting
   useEffect(() => {
     setChatMessages([
       {
         role: "companion",
-        text: `Hey! Let's solve "${problem.title}" together! ${problem.difficulty === "Hard" ? "This one's tough but I believe in you! 💪" : "You've got this! 💕"} Ask me anything or click Get Hint for a clue!`,
+        text: `Hey! Let's solve "${problem.title}" together! ${
+          problem.difficulty === "Hard"
+            ? "This one's tough but I believe in you! 💪"
+            : "You've got this! 💕"
+        } Ask me anything or click Get Hint for a clue!`,
       },
     ]);
   }, [problem]);
@@ -137,7 +292,9 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
       ...prev,
       {
         role: "companion",
-        text: `Amazing work! 🎉 You submitted a solution for "${problem.title}"! ${already ? "" : `+${xpGained} XP earned! 🌟`} ${pick(preset.correctAnswerResponses, `${preset.id}_correct`)}`,
+        text: `Amazing work! 🎉 You submitted a solution for "${problem.title}"! ${
+          already ? "" : `+${xpGained} XP earned! 🌟`
+        }`,
       },
     ]);
   };
@@ -148,13 +305,20 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
       { role: "user", text: "Can I get a hint? 🤔" },
     ]);
     setIsTyping(true);
-    setTimeout(() => {
+    askOpenAI({
+      userMessage: "Can I get a hint for this problem?",
+      companionName: user.companionName || preset.defaultName,
+      problemTitle: problem.title,
+      problemHint: problem.hint,
+      openaiKey,
+      claudeKey,
+    }).then((resp) => {
       setIsTyping(false);
       setChatMessages((prev) => [
         ...prev,
-        { role: "companion", text: `💡 Hint: ${problem.hint}` },
+        { role: "companion", text: resp || `💡 Hint: ${problem.hint}` },
       ]);
-    }, 600);
+    });
   };
 
   const handleSendChat = useCallback(() => {
@@ -163,47 +327,37 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
     setChatInput("");
     setChatMessages((prev) => [...prev, { role: "user", text }]);
     setIsTyping(true);
-    setTimeout(
-      () => {
-        setIsTyping(false);
-        const lower = text.toLowerCase();
-        let response: string;
-        if (
-          lower.includes("hint") ||
-          lower.includes("help") ||
-          lower.includes("stuck")
-        ) {
-          response = `💡 Hint: ${problem.hint}`;
-        } else if (lower.includes("explain") || lower.includes("how")) {
-          response = `Great question! For ${problem.title}: ${problem.desc} The key is: ${problem.hint}`;
-        } else {
-          response = pick(preset.encouragements, `${preset.id}_encouragement`);
-        }
-        setChatMessages((prev) => [
-          ...prev,
-          { role: "companion", text: response },
-        ]);
-      },
-      600 + Math.random() * 400,
-    );
-  }, [chatInput, preset, pick, problem]);
+    askOpenAI({
+      userMessage: text,
+      companionName: user.companionName || preset.defaultName,
+      problemTitle: problem.title,
+      problemHint: problem.hint,
+      openaiKey,
+      claudeKey,
+    }).then((resp) => {
+      setIsTyping(false);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "companion",
+          text: resp || "You're doing great! Keep coding! 💕",
+        },
+      ]);
+    });
+  }, [
+    chatInput,
+    user.companionName,
+    preset.defaultName,
+    problem,
+    openaiKey,
+    claudeKey,
+  ]);
 
   return (
     <div className="min-h-screen bg-[#fdf2f6] flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setCurrentProblemId(null);
-              setPage("problems");
-            }}
-            className="rounded-full gap-1 text-muted-foreground"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Button>
           <div className="w-8 h-8 rounded-full overflow-hidden">
             <img
               src={preset.image}
@@ -304,7 +458,6 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
               <span className="text-xs text-gray-500">Javascript</span>
             </div>
             <div className="flex">
-              {/* Line numbers */}
               <div className="px-3 py-4 text-right select-none font-mono text-xs text-gray-600 bg-[#181825] min-w-[2.5rem]">
                 {code.split("\n").map((_, i) => (
                   <div key={`ln-${i + 1}`}>{i + 1}</div>
@@ -380,8 +533,8 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
                   <div className="text-xs font-bold">
                     {user.companionName} Chat
                   </div>
-                  <div className="text-[10px] text-muted-foreground italic">
-                    &quot;Bring the heat—ship the code.&quot;
+                  <div className="text-[10px] text-muted-foreground">
+                    {openaiKey || claudeKey ? "🤖 AI Powered" : "💬 Local Mode"}
                   </div>
                 </div>
               </div>
@@ -442,7 +595,7 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-                placeholder="Chat with your companion..."
+                placeholder="Ask your companion anything..."
                 className="rounded-full h-9 text-sm border-2 focus:border-primary"
               />
               <Button
@@ -456,12 +609,14 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
           </div>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
 
 export default function ProblemsPage() {
-  const { currentProblemId, setCurrentProblemId, setPage } = useApp();
+  const { currentProblemId, setCurrentProblemId } = useApp();
 
   const currentProblem = currentProblemId
     ? CODING_PROBLEMS.find((p) => p.id === currentProblemId)
@@ -472,65 +627,61 @@ export default function ProblemsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdf2f6]">
+    <div className="min-h-screen bg-[#fdf2f6] flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-border px-4 py-3 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setPage("study")}
-          className="rounded-full gap-1 text-muted-foreground"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to Study
-        </Button>
         <span className="font-bold text-foreground">Code Studio 💻</span>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Section heading */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-extrabold text-primary">
-            💻 Code Studio
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Practice real coding problems with your companion by your side
-          </p>
-        </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          {/* Section heading */}
+          <div className="mb-6">
+            <h2 className="text-2xl font-extrabold text-primary">
+              💻 Code Studio
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Practice real coding problems with your companion by your side
+            </p>
+          </div>
 
-        {/* Problem grid */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-10">
-          {CODING_PROBLEMS.map((problem) => (
-            <ProblemCard
-              key={problem.id}
-              problem={problem}
-              onStart={() => setCurrentProblemId(problem.id)}
-            />
-          ))}
-        </div>
-
-        {/* Achievements */}
-        <div>
-          <h3 className="text-xl font-extrabold text-foreground mb-4 flex items-center gap-2">
-            🏆 Achievements
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {ACHIEVEMENTS.map((ach) => (
-              <div
-                key={ach.name}
-                className="bg-white rounded-2xl p-4 border border-border text-center opacity-60"
-              >
-                <div className="text-2xl mb-1">{ach.icon}</div>
-                <div className="text-xs font-bold text-foreground">
-                  {ach.name}
-                </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {ach.desc}
-                </div>
-              </div>
+          {/* Problem grid */}
+          <div className="grid sm:grid-cols-2 gap-4 mb-10">
+            {CODING_PROBLEMS.map((problem) => (
+              <ProblemCard
+                key={problem.id}
+                problem={problem}
+                onStart={() => setCurrentProblemId(problem.id)}
+              />
             ))}
+          </div>
+
+          {/* Achievements */}
+          <div>
+            <h3 className="text-xl font-extrabold text-foreground mb-4 flex items-center gap-2">
+              🏆 Achievements
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {ACHIEVEMENTS.map((ach) => (
+                <div
+                  key={ach.name}
+                  className="bg-white rounded-2xl p-4 border border-border text-center opacity-60"
+                >
+                  <div className="text-2xl mb-1">{ach.icon}</div>
+                  <div className="text-xs font-bold text-foreground">
+                    {ach.name}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    {ach.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

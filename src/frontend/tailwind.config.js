@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Poppins', 'sans-serif'],
-        poppins: ['Poppins', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'sans-serif'],
+        jakarta: ['Plus Jakarta Sans', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
         border: "oklch(var(--border))",
@@ -68,13 +69,10 @@ export default {
           border: "oklch(var(--sidebar-border))",
           ring: "oklch(var(--sidebar-ring))",
         },
-        pink: {
-          crush: "oklch(var(--primary))",
-          hero: "oklch(var(--hero-pink))",
-        },
-        lavender: {
-          crush: "oklch(var(--secondary))",
-          soft: "oklch(var(--lavender-soft))",
+        navy: {
+          DEFAULT: "oklch(0.1 0.045 260)",
+          light: "oklch(0.16 0.04 260)",
+          surface: "oklch(0.2 0.03 260)",
         },
       },
       borderRadius: {
@@ -86,9 +84,10 @@ export default {
         "3xl": "2rem",
       },
       boxShadow: {
-        card: "0 4px 20px oklch(0.65 0.18 350 / 0.08)",
-        "card-hover": "0 12px 32px oklch(0.65 0.18 350 / 0.15)",
-        glow: "0 0 24px oklch(0.65 0.18 350 / 0.3)",
+        card: "0 4px 20px oklch(0 0 0 / 0.3)",
+        "card-hover": "0 12px 32px oklch(0 0 0 / 0.5)",
+        glow: "0 0 24px oklch(0.58 0.2 265 / 0.4)",
+        "glow-sm": "0 0 12px oklch(0.58 0.2 265 / 0.3)",
       },
       keyframes: {
         "accordion-down": {

@@ -11,7 +11,6 @@ export type AppPage =
   | "landing"
   | "onboarding"
   | "study"
-  | "quiz"
   | "problems"
   | "dashboard";
 
@@ -31,6 +30,8 @@ export interface UserState {
   solvedProblems: string[];
   unlockedOutfits: string[];
   activeOutfit: string;
+  profilePhoto: string;
+  companionCustomPhoto: string;
 }
 
 export interface ChatMessage {
@@ -84,6 +85,8 @@ const DEFAULT_USER: UserState = {
   solvedProblems: [],
   unlockedOutfits: ["default"],
   activeOutfit: "default",
+  profilePhoto: "",
+  companionCustomPhoto: "",
 };
 
 const AppContext = createContext<AppContextValue | null>(null);

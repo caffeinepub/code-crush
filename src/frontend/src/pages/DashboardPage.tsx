@@ -1,198 +1,318 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
-  ArrowLeft,
   Award,
+  Camera,
   CheckCircle,
   Flame,
-  Settings,
   ShoppingBag,
-  Star,
-  User,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 
 const XP_PER_LEVEL = 100;
 
+const DAILY_TIPS = [
+  {
+    icon: "💧",
+    tip: "Drink water regularly! Hydration improves focus and memory retention by up to 20%.",
+  },
+  {
+    icon: "💡",
+    tip: "Study in 25-minute sprints with 5-minute breaks. The Pomodoro Technique beats marathon sessions every time.",
+  },
+  {
+    icon: "🌙",
+    tip: "Sleep is when your brain consolidates code! Aim for 7-8 hours to retain what you learned today.",
+  },
+  {
+    icon: "🤸",
+    tip: "Stretch every 45 minutes. A 2-minute stretch improves blood flow and keeps you sharp.",
+  },
+  {
+    icon: "🎧",
+    tip: "Lo-fi music or white noise can boost concentration by 15%. Try it for your next session!",
+  },
+  {
+    icon: "✏️",
+    tip: "Write code by hand occasionally. It strengthens understanding far better than copy-paste.",
+  },
+  {
+    icon: "🧠",
+    tip: "Teach what you learn. Explaining a concept out loud reveals gaps in your knowledge instantly.",
+  },
+  {
+    icon: "🍎",
+    tip: "Brain food: blueberries, dark chocolate, and nuts support focus and cognitive performance!",
+  },
+  {
+    icon: "👀",
+    tip: "Follow the 20-20-20 rule: every 20 mins, look at something 20 feet away for 20 seconds.",
+  },
+  {
+    icon: "📝",
+    tip: "Review your notes within 24 hours. The forgetting curve drops sharply — re-reading locks it in.",
+  },
+  {
+    icon: "🌳",
+    tip: "A short walk outside resets your mind and improves creative problem-solving skills.",
+  },
+  {
+    icon: "💪",
+    tip: "Progress beats perfection. Solving one problem imperfectly beats planning forever.",
+  },
+];
+
 export default function DashboardPage() {
-  const {
-    user,
-    setUser,
-    setPage,
-    openaiKey,
-    setOpenaiKey,
-    claudeKey,
-    setClaudeKey,
-  } = useApp();
-  const [apiKeyInput, setApiKeyInput] = useState(openaiKey);
-  const [claudeKeyInput, setClaudeKeyInput] = useState(claudeKey);
-  const [saved, setSaved] = useState(false);
+  const { user, setUser, setPage } = useApp();
+  const [tipIndex, setTipIndex] = useState(() =>
+    Math.floor(Math.random() * DAILY_TIPS.length),
+  );
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const preset =
     COMPANION_PRESETS.find((p) => p.personality === user.personality) ??
     COMPANION_PRESETS[0];
   const level = Math.floor(user.xp / XP_PER_LEVEL) + 1;
   const xpProgress = ((user.xp % XP_PER_LEVEL) / XP_PER_LEVEL) * 100;
+  const companionImage = user.companionCustomPhoto || preset.image;
 
-  const handleSaveKey = () => {
-    setOpenaiKey(apiKeyInput);
-    setClaudeKey(claudeKeyInput);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  // Rotate tips every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTipIndex((prev) => (prev + 1) % DAILY_TIPS.length);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setUser({ profilePhoto: ev.target?.result as string });
+    };
+    reader.readAsDataURL(file);
   };
 
   const initials = user.username
     ? user.username.slice(0, 2).toUpperCase()
     : "?";
 
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
-        <Button
-          data-ocid="dashboard.back.button"
-          variant="ghost"
-          size="sm"
-          onClick={() => setPage("study")}
-          className="rounded-full"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
+      <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
         <h1 className="font-bold text-foreground">Dashboard</h1>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        {/* Profile Card */}
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5 pb-24">
+        {/* Daily Tip */}
+        <motion.div
+          key={tipIndex}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-gradient-to-r from-primary/20 via-secondary/10 to-primary/10 rounded-2xl p-5 border border-primary/20"
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-3xl">{DAILY_TIPS[tipIndex].icon}</span>
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-wide mb-1">
+                Daily Tip — {today}
+              </p>
+              <p className="text-sm text-foreground leading-relaxed">
+                {DAILY_TIPS[tipIndex].tip}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-1.5 mt-3">
+            {DAILY_TIPS.map((tip, i) => (
+              <button
+                key={tip.tip.slice(0, 15)}
+                type="button"
+                onClick={() => setTipIndex(i)}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === tipIndex ? "w-5 bg-primary" : "w-1.5 bg-primary/30"
+                }`}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Hero Profile Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border"
+          className="bg-card rounded-3xl overflow-hidden border border-border shadow-card"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white text-xl font-extrabold shrink-0">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-extrabold text-xl text-foreground truncate">
-                {user.username || "Student"}
-              </h2>
-              <p className="text-sm text-muted-foreground truncate">
-                {user.email}
-              </p>
-              <div className="flex items-center gap-2 mt-1">
-                <img
-                  src={preset.image}
-                  alt={user.companionName}
-                  className="w-5 h-5 rounded-full object-cover"
+          {/* Banner */}
+          <div className="h-24 bg-gradient-to-r from-primary/30 via-secondary/20 to-primary/10 relative">
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 2px 2px, oklch(0.6 0.2 265 / 0.5) 1px, transparent 0)",
+                backgroundSize: "24px 24px",
+              }}
+            />
+          </div>
+          <div className="px-6 pb-6 -mt-12">
+            <div className="flex items-end justify-between mb-4">
+              {/* Profile Photo */}
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full border-4 border-card overflow-hidden bg-muted">
+                  {user.profilePhoto ? (
+                    <img
+                      src={user.profilePhoto}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/60 to-secondary/60 flex items-center justify-center">
+                      <span className="text-white text-xl font-extrabold">
+                        {initials}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  data-ocid="dashboard.photo.upload_button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
+                >
+                  <Camera className="w-3.5 h-3.5 text-white" />
+                </button>
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoUpload}
                 />
-                <span className="text-xs text-muted-foreground">
-                  Companion:{" "}
-                  <strong className="text-foreground">
+              </div>
+              {/* Companion */}
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Companion</p>
+                <div className="flex items-center gap-2 justify-end">
+                  <span className="text-sm font-bold text-foreground">
                     {user.companionName}
-                  </strong>
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  · {user.personality}
-                </span>
+                  </span>
+                  <img
+                    src={companionImage}
+                    alt={user.companionName}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                </div>
               </div>
             </div>
-            <Button
-              data-ocid="dashboard.edit_profile.button"
-              variant="outline"
-              size="sm"
-              className="rounded-full shrink-0"
-            >
-              <User className="w-3.5 h-3.5 mr-1" /> Edit
-            </Button>
+            <h2 className="font-extrabold text-xl text-foreground">
+              {user.username || "Student"}
+            </h2>
+            <p className="text-sm text-muted-foreground">{user.email}</p>
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <span className="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary font-semibold border border-primary/30">
+                Level {level} Scholar
+              </span>
+              <span className="text-xs px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 font-semibold border border-orange-500/30">
+                🔥 {user.streak} Day Streak
+              </span>
+            </div>
           </div>
         </motion.div>
 
-        {/* XP & Level */}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            {
+              label: "XP",
+              value: user.xp,
+              icon: <Zap className="w-5 h-5 text-yellow-400" />,
+              color: "text-yellow-400",
+            },
+            {
+              label: "SP",
+              value: user.studyPoints,
+              icon: <span className="text-lg">⭐</span>,
+              color: "text-amber-400",
+            },
+            {
+              label: "Solved",
+              value: user.solvedProblems.length,
+              icon: <CheckCircle className="w-5 h-5 text-green-400" />,
+              color: "text-green-400",
+            },
+          ].map((stat) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className="bg-card rounded-2xl p-4 border border-border text-center"
+            >
+              <div className="flex justify-center mb-1">{stat.icon}</div>
+              <p className={`text-2xl font-extrabold ${stat.color}`}>
+                {stat.value}
+              </p>
+              <p className="text-xs text-muted-foreground">{stat.label}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* XP Progress */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.05 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border"
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="bg-card rounded-2xl p-5 border border-border"
         >
-          <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-yellow-500" /> XP &amp; Progress
-          </h3>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-yellow-400" />
+              <span className="font-semibold text-foreground text-sm">
+                Level {level}
+              </span>
+            </div>
             <span className="text-sm text-muted-foreground">
-              Match Level {level}
+              {user.xp} / {level * XP_PER_LEVEL} XP
             </span>
-            <span className="font-bold text-primary">{user.xp} XP total</span>
           </div>
           <Progress value={xpProgress} className="h-3 rounded-full" />
           <p className="text-xs text-muted-foreground mt-2">
-            {XP_PER_LEVEL - (user.xp % XP_PER_LEVEL)} XP until Level {level + 1}
+            {XP_PER_LEVEL - (user.xp % XP_PER_LEVEL)} XP to Level {level + 1}
           </p>
-        </motion.div>
-
-        {/* Study Points */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.08 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border"
-          data-ocid="dashboard.study_points.card"
-        >
-          <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
-            <Star className="w-4 h-4 text-yellow-500" /> Study Points
-          </h3>
-          <p className="text-3xl font-bold text-yellow-500">
-            {user.studyPoints} SP
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Earn SP by solving problems (+3) and quiz answers (+1). Spend in the
-            Outfit Shop!
-          </p>
-        </motion.div>
-
-        {/* Streak */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border flex items-center gap-4"
-        >
-          <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center shrink-0">
-            <Flame className="w-7 h-7 text-orange-500" />
-          </div>
-          <div>
-            <p className="font-extrabold text-2xl text-foreground">
-              {user.streak} Day Streak 🔥
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Keep it up! Consistency beats intensity.
-            </p>
-          </div>
         </motion.div>
 
         {/* Badges */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border"
+          className="bg-card rounded-2xl p-5 border border-border"
         >
-          <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <Award className="w-4 h-4 text-purple-500" /> Badges
-          </h3>
+          <div className="flex items-center gap-2 mb-4">
+            <Award className="w-4 h-4 text-primary" />
+            <h3 className="font-semibold text-foreground">Badges</h3>
+          </div>
           {user.badges.length === 0 ? (
             <div
               className="text-center py-6"
               data-ocid="dashboard.badges.empty_state"
             >
-              <p className="text-4xl mb-2">🏆</p>
+              <div className="text-3xl mb-2">🏆</div>
               <p className="text-sm text-muted-foreground">
-                No badges yet. Complete quizzes to earn them!
+                Complete quizzes to earn badges!
               </p>
             </div>
           ) : (
@@ -200,7 +320,7 @@ export default function DashboardPage() {
               {user.badges.map((b) => (
                 <span
                   key={b}
-                  className="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-full text-sm border border-primary/20"
+                  className="text-sm bg-primary/20 text-primary border border-primary/30 rounded-full px-3 py-1 font-medium"
                 >
                   {b}
                 </span>
@@ -209,197 +329,112 @@ export default function DashboardPage() {
           )}
         </motion.div>
 
-        {/* Solved Problems */}
+        {/* Streak */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border"
+          className="bg-card rounded-2xl p-5 border border-border"
         >
-          <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-500" /> Solved Problems
-          </h3>
-          {user.solvedProblems.length === 0 ? (
-            <div
-              className="text-center py-6"
-              data-ocid="dashboard.problems.empty_state"
-            >
-              <p className="text-4xl mb-2">💻</p>
-              <p className="text-sm text-muted-foreground">
-                No problems solved yet. Head to Code Studio!
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
+              <Flame className="w-6 h-6 text-orange-400" />
+            </div>
+            <div>
+              <p className="font-bold text-foreground">
+                {user.streak} Day Streak
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Keep studying daily to maintain your streak!
               </p>
             </div>
-          ) : (
-            <div className="space-y-2">
-              {user.solvedProblems.map((pid, i) => (
-                <div
-                  key={pid}
-                  className="flex items-center gap-2 bg-green-50 rounded-xl px-3 py-2"
-                  data-ocid={`dashboard.problems.item.${i + 1}`}
-                >
-                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                  <span className="text-sm font-medium text-foreground">
-                    {pid}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+          </div>
         </motion.div>
 
         {/* Outfit Shop */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.22 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border"
-          data-ocid="dashboard.outfit_shop.card"
+          transition={{ duration: 0.4, delay: 0.25 }}
+          className="bg-card rounded-2xl p-5 border border-border"
         >
-          <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-pink-500" /> Outfit Shop 👗
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Unlock new looks for {user.companionName}! You have{" "}
-            <strong className="text-yellow-600">{user.studyPoints} SP</strong>
-          </p>
-          <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-4">
+            <ShoppingBag className="w-4 h-4 text-primary" />
+            <h3 className="font-semibold text-foreground">Outfit Shop</h3>
+            <span className="ml-auto text-sm font-bold text-amber-400">
+              ⭐ {user.studyPoints} SP
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
             {preset.outfits.map((outfit) => {
-              const isUnlocked = user.unlockedOutfits.includes(outfit.id);
-              const isEquipped = user.activeOutfit === outfit.id;
+              const owned = user.unlockedOutfits.includes(outfit.id);
+              const active = user.activeOutfit === outfit.id;
               const canAfford = user.studyPoints >= outfit.cost;
               return (
                 <div
                   key={outfit.id}
-                  className={`flex items-center justify-between rounded-2xl px-4 py-3 border-2 transition-all ${
-                    isEquipped
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-muted/40"
+                  className={`rounded-xl border p-3 text-center transition-all ${
+                    active
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-muted"
                   }`}
-                  data-ocid={`dashboard.outfit.${outfit.id}.row`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{outfit.emoji}</span>
-                    <div>
-                      <p className="font-semibold text-foreground text-sm">
-                        {outfit.label}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {outfit.cost === 0 ? "Free" : `${outfit.cost} SP`}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isEquipped ? (
-                      <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
-                        Equipped ✓
-                      </span>
-                    ) : isUnlocked ? (
-                      <Button
-                        data-ocid={`dashboard.outfit.${outfit.id}.edit_button`}
-                        size="sm"
-                        variant="outline"
-                        className="rounded-full h-8 text-xs font-bold border-primary text-primary"
-                        onClick={() => setUser({ activeOutfit: outfit.id })}
-                      >
-                        Equip
-                      </Button>
-                    ) : (
-                      <Button
-                        data-ocid={`dashboard.outfit.${outfit.id}.primary_button`}
-                        size="sm"
-                        className="rounded-full h-8 text-xs font-bold bg-yellow-400 text-white hover:bg-yellow-500"
-                        disabled={!canAfford}
-                        onClick={() => {
-                          if (!canAfford) return;
-                          setUser({
-                            studyPoints: user.studyPoints - outfit.cost,
-                            unlockedOutfits: [
-                              ...user.unlockedOutfits,
-                              outfit.id,
-                            ],
-                            activeOutfit: outfit.id,
-                          });
-                        }}
-                      >
-                        {canAfford
-                          ? `Unlock ⭐${outfit.cost}`
-                          : `Need ${outfit.cost} SP`}
-                      </Button>
-                    )}
-                  </div>
+                  <div className="text-2xl mb-1">{outfit.emoji}</div>
+                  <p className="text-xs font-semibold text-foreground">
+                    {outfit.label}
+                  </p>
+                  {outfit.cost === 0 ? (
+                    <p className="text-xs text-green-400 mt-1">Free</p>
+                  ) : (
+                    <p className="text-xs text-amber-400 mt-1">
+                      ⭐ {outfit.cost} SP
+                    </p>
+                  )}
+                  {!owned ? (
+                    <button
+                      type="button"
+                      data-ocid={`dashboard.outfit_${outfit.id}.button`}
+                      disabled={!canAfford}
+                      onClick={() => {
+                        if (!canAfford) return;
+                        setUser({
+                          studyPoints: user.studyPoints - outfit.cost,
+                          unlockedOutfits: [...user.unlockedOutfits, outfit.id],
+                          activeOutfit: outfit.id,
+                        });
+                      }}
+                      className="mt-2 w-full text-xs py-1 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 font-semibold"
+                    >
+                      Buy
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      data-ocid={`dashboard.equip_${outfit.id}.button`}
+                      onClick={() => setUser({ activeOutfit: outfit.id })}
+                      className={`mt-2 w-full text-xs py-1 rounded-lg font-semibold transition-colors ${
+                        active
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted border border-border text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {active ? "Equipped" : "Equip"}
+                    </button>
+                  )}
                 </div>
               );
             })}
           </div>
         </motion.div>
 
-        {/* Settings — API Keys */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.25 }}
-          className="bg-white rounded-3xl p-6 shadow-card border border-border"
+        <Button
+          data-ocid="dashboard.back.button"
+          variant="outline"
+          onClick={() => setPage("study")}
+          className="w-full rounded-full border-border text-muted-foreground hover:text-foreground"
         >
-          <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <Settings className="w-4 h-4 text-muted-foreground" /> AI Settings
-          </h3>
-          <div className="space-y-4">
-            {/* Claude Key */}
-            <div>
-              <label
-                htmlFor="dash-claude-key"
-                className="text-sm font-semibold text-foreground block mb-1.5"
-              >
-                Claude API Key{" "}
-                <span className="text-xs font-normal text-muted-foreground">
-                  (Priority)
-                </span>
-              </label>
-              <Input
-                id="dash-claude-key"
-                data-ocid="dashboard.claude_key.input"
-                type="password"
-                value={claudeKeyInput}
-                onChange={(e) => setClaudeKeyInput(e.target.value)}
-                placeholder="sk-ant-..."
-                className="rounded-xl h-10 font-mono text-sm"
-              />
-              {claudeKey && (
-                <p className="text-xs text-green-600 mt-1">
-                  ✅ Claude key active — using Claude Sonnet 4.5
-                </p>
-              )}
-            </div>
-            {/* OpenAI Key */}
-            <div>
-              <label
-                htmlFor="dash-openai-key"
-                className="text-sm font-semibold text-foreground block mb-1.5"
-              >
-                OpenAI API Key
-              </label>
-              <Input
-                id="dash-openai-key"
-                data-ocid="dashboard.openai_key.input"
-                type="password"
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="sk-..."
-                className="rounded-xl h-10 font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Fallback when Claude key is not set.
-              </p>
-            </div>
-            <Button
-              data-ocid="dashboard.save_key.button"
-              onClick={handleSaveKey}
-              className="rounded-xl bg-primary text-primary-foreground font-semibold w-full"
-            >
-              {saved ? "✅ Saved!" : "Save API Keys"}
-            </Button>
-          </div>
-        </motion.div>
+          Return to Study
+        </Button>
       </div>
     </div>
   );

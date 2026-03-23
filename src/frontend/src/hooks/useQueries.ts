@@ -4,13 +4,13 @@ import type { PersonalityType } from "../data/companions";
 import { useActor } from "./useActor";
 
 const toBackendPersonality = (p: PersonalityType): Personality => {
-  const map: Record<PersonalityType, Personality> = {
+  const map: Partial<Record<PersonalityType, Personality>> = {
     encouraging: Personality.encouraging,
     witty: Personality.witty,
     calm: Personality.calm,
     playful: Personality.playful,
   };
-  return map[p];
+  return map[p] ?? Personality.encouraging;
 };
 
 export function useGetProfile(username: string) {

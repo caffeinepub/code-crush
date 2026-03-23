@@ -6,7 +6,6 @@ import DashboardPage from "./pages/DashboardPage";
 import LandingPage from "./pages/LandingPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import ProblemsPage from "./pages/ProblemsPage";
-import QuizMode from "./pages/QuizMode";
 import StudyApp from "./pages/StudyApp";
 
 const queryClient = new QueryClient({
@@ -23,7 +22,6 @@ function AppRouter() {
       {page === "landing" && <LandingPage />}
       {page === "onboarding" && <OnboardingPage />}
       {page === "study" && <StudyApp />}
-      {page === "quiz" && <QuizMode />}
       {page === "problems" && <ProblemsPage />}
       {page === "dashboard" && <DashboardPage />}
       <LoveCallModal />

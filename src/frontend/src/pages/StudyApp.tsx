@@ -1,18 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
-import {
   Award,
   BookOpen,
+  Calendar,
   Code,
   ExternalLink,
   FileText,
@@ -23,8 +16,6 @@ import {
   Phone,
   Play,
   Send,
-  Settings,
-  Star,
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -33,6 +24,7 @@ import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 import { useAddMessage } from "../hooks/useQueries";
 import { useResponseQueue } from "../hooks/useResponseQueue";
+import EventsPage from "./EventsPage";
 
 const XP_PER_LEVEL = 100;
 
@@ -78,12 +70,20 @@ const BREAK_TIPS = [
 
 const STUDY_MODULES = [
   {
-    id: "ds",
-    title: "Data Structures",
+    id: "dsa",
+    title: "Data Structures & Algorithms",
     icon: "🗄️",
-    description: "Arrays, Linked Lists, Trees, Graphs & more",
-    color: "from-blue-50 to-indigo-50",
-    border: "border-blue-200",
+    description: "Arrays, Linked Lists, Trees, Graphs, Sorting",
+    difficulty: "Advanced",
+    diffColor: "text-red-400 bg-red-500/10",
+    topics: [
+      "Arrays",
+      "Linked Lists",
+      "Trees",
+      "Graphs",
+      "Sorting",
+      "Searching",
+    ],
     resources: [
       {
         type: "pdf",
@@ -106,14 +106,47 @@ const STUDY_MODULES = [
         url: "https://www.youtube.com/watch?v=JeznW_7DlB0",
       },
     ],
+    quiz: [
+      {
+        q: "What is the time complexity of binary search?",
+        options: ["O(n)", "O(log n)", "O(n log n)", "O(1)"],
+        correct: 1,
+      },
+      {
+        q: "Which data structure uses LIFO ordering?",
+        options: ["Queue", "Array", "Stack", "Graph"],
+        correct: 2,
+      },
+      {
+        q: "What is the worst-case time complexity of quicksort?",
+        options: ["O(n log n)", "O(n\u00b2)", "O(log n)", "O(n)"],
+        correct: 1,
+      },
+      {
+        q: "A binary tree has a maximum of how many children per node?",
+        options: ["1", "2", "3", "4"],
+        correct: 1,
+      },
+      {
+        q: "Which sorting algorithm has O(n log n) average case?",
+        options: [
+          "Bubble Sort",
+          "Insertion Sort",
+          "Merge Sort",
+          "Selection Sort",
+        ],
+        correct: 2,
+      },
+    ],
   },
   {
-    id: "js",
-    title: "JavaScript",
-    icon: "💛",
-    description: "ES6+, Async, DOM & Modern JS patterns",
-    color: "from-amber-50 to-yellow-50",
-    border: "border-amber-200",
+    id: "web",
+    title: "Web Development",
+    icon: "🌐",
+    description: "HTML, CSS, JavaScript, React, APIs",
+    difficulty: "Intermediate",
+    diffColor: "text-amber-400 bg-amber-500/10",
+    topics: ["HTML5", "CSS3", "JavaScript ES6+", "React", "REST APIs"],
     resources: [
       {
         type: "pdf",
@@ -127,31 +160,444 @@ const STUDY_MODULES = [
       },
       {
         type: "video",
-        label: "Async/Await",
-        url: "https://www.youtube.com/watch?v=V_Kr9OSfDeU",
+        label: "React Crash Course",
+        url: "https://www.youtube.com/watch?v=w7ejDZ8SWv8",
+      },
+    ],
+    quiz: [
+      {
+        q: "Which HTML tag is used for the largest heading?",
+        options: ["<h6>", "<h1>", "<heading>", "<header>"],
+        correct: 1,
+      },
+      {
+        q: "What does CSS stand for?",
+        options: [
+          "Computer Style Sheets",
+          "Cascading Style Sheets",
+          "Creative Style System",
+          "Colorful Style Sheets",
+        ],
+        correct: 1,
+      },
+      {
+        q: "Which method adds an element to the end of an array in JS?",
+        options: ["push()", "pop()", "shift()", "append()"],
+        correct: 0,
+      },
+      {
+        q: "What is JSX in React?",
+        options: [
+          "A JS library",
+          "A database query language",
+          "A syntax extension for JS",
+          "A CSS preprocessor",
+        ],
+        correct: 2,
+      },
+      {
+        q: "What HTTP method is used to fetch data from a server?",
+        options: ["POST", "DELETE", "PUT", "GET"],
+        correct: 3,
+      },
+    ],
+  },
+  {
+    id: "python",
+    title: "Python Programming",
+    icon: "🐍",
+    description: "Basics, OOP, Data Science, Flask",
+    difficulty: "Beginner",
+    diffColor: "text-green-400 bg-green-500/10",
+    topics: ["Python Basics", "OOP", "NumPy/Pandas", "Flask", "Data Science"],
+    resources: [
+      {
+        type: "pdf",
+        label: "Python Cheat Sheet",
+        url: "https://www.pythoncheatsheet.org/",
+      },
+      {
+        type: "video",
+        label: "Python for Beginners",
+        url: "https://www.youtube.com/watch?v=rfscVS0vtbw",
+      },
+      {
+        type: "video",
+        label: "Python OOP Tutorial",
+        url: "https://www.youtube.com/watch?v=ZDa-Z5JzLYM",
+      },
+    ],
+    quiz: [
+      {
+        q: "Which keyword is used to define a function in Python?",
+        options: ["function", "def", "func", "define"],
+        correct: 1,
+      },
+      {
+        q: "What is the output of print(type([]))?",
+        options: ["<class 'list'>", "<class 'array'>", "list", "array"],
+        correct: 0,
+      },
+      {
+        q: "Which of these is a mutable data type in Python?",
+        options: ["tuple", "string", "list", "int"],
+        correct: 2,
+      },
+      {
+        q: "What does 'self' refer to in a Python class?",
+        options: [
+          "The parent class",
+          "The class itself",
+          "The current instance",
+          "A global variable",
+        ],
+        correct: 2,
+      },
+      {
+        q: "Which library is used for data manipulation in Python?",
+        options: ["NumPy", "Pandas", "Matplotlib", "Requests"],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: "java",
+    title: "Java Programming",
+    icon: "☕",
+    description: "OOP, Collections, Multithreading",
+    difficulty: "Intermediate",
+    diffColor: "text-amber-400 bg-amber-500/10",
+    topics: [
+      "Java Basics",
+      "OOP Principles",
+      "Collections",
+      "Multithreading",
+      "Generics",
+    ],
+    resources: [
+      {
+        type: "pdf",
+        label: "Java Cheat Sheet",
+        url: "https://introcs.cs.princeton.edu/java/11cheatsheet/",
+      },
+      {
+        type: "video",
+        label: "Java Full Course",
+        url: "https://www.youtube.com/watch?v=eIrMbAQSU34",
+      },
+    ],
+    quiz: [
+      {
+        q: "Which keyword makes a variable constant in Java?",
+        options: ["static", "const", "final", "immutable"],
+        correct: 2,
+      },
+      {
+        q: "What is the default value of an int in Java?",
+        options: ["null", "undefined", "0", "-1"],
+        correct: 2,
+      },
+      {
+        q: "Which collection maintains insertion order in Java?",
+        options: ["HashSet", "TreeSet", "LinkedList", "HashMap"],
+        correct: 2,
+      },
+      {
+        q: "What is method overloading?",
+        options: [
+          "Same name, different parameters",
+          "Same name, same parameters",
+          "Different class, same method",
+          "Overriding parent method",
+        ],
+        correct: 0,
+      },
+      {
+        q: "Which Java keyword is used for inheritance?",
+        options: ["inherits", "extends", "implements", "super"],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: "os",
+    title: "Operating Systems",
+    icon: "💻",
+    description: "Processes, Memory, File Systems",
+    difficulty: "Advanced",
+    diffColor: "text-red-400 bg-red-500/10",
+    topics: [
+      "Processes & Threads",
+      "Memory Management",
+      "File Systems",
+      "Deadlocks",
+      "Scheduling",
+    ],
+    resources: [
+      {
+        type: "pdf",
+        label: "OS Concepts PDF",
+        url: "https://www.os-book.com/OS10/",
+      },
+      {
+        type: "video",
+        label: "OS by Neso Academy",
+        url: "https://www.youtube.com/watch?v=vBURTt97EkA",
+      },
+    ],
+    quiz: [
+      {
+        q: "What is a deadlock in OS?",
+        options: [
+          "A crashed process",
+          "Circular wait between processes",
+          "Memory overflow",
+          "CPU overload",
+        ],
+        correct: 1,
+      },
+      {
+        q: "Which scheduling algorithm gives priority to shortest job?",
+        options: ["FCFS", "Round Robin", "SJF", "Priority"],
+        correct: 2,
+      },
+      {
+        q: "Virtual memory allows programs to use more memory than?",
+        options: ["Hard disk space", "Physical RAM", "CPU cache", "GPU memory"],
+        correct: 1,
+      },
+      {
+        q: "What is a semaphore used for?",
+        options: [
+          "Memory allocation",
+          "Process synchronization",
+          "File management",
+          "CPU scheduling",
+        ],
+        correct: 1,
+      },
+      {
+        q: "Thrashing occurs when?",
+        options: [
+          "Too many files open",
+          "CPU is idle",
+          "Excessive page swapping",
+          "Network is overloaded",
+        ],
+        correct: 2,
+      },
+    ],
+  },
+  {
+    id: "networks",
+    title: "Computer Networks",
+    icon: "🌐",
+    description: "OSI Model, TCP/IP, HTTP, Security",
+    difficulty: "Intermediate",
+    diffColor: "text-amber-400 bg-amber-500/10",
+    topics: ["OSI Model", "TCP/IP", "HTTP/HTTPS", "DNS", "Network Security"],
+    resources: [
+      {
+        type: "pdf",
+        label: "Networking Basics",
+        url: "https://www.cisco.com/c/en/us/solutions/small-business/resource-center/networking/networking-basics.html",
+      },
+      {
+        type: "video",
+        label: "Computer Networks",
+        url: "https://www.youtube.com/watch?v=qiQR5rTSshw",
+      },
+    ],
+    quiz: [
+      {
+        q: "How many layers does the OSI model have?",
+        options: ["4", "5", "6", "7"],
+        correct: 3,
+      },
+      {
+        q: "Which protocol is used for reliable data transmission?",
+        options: ["UDP", "IP", "TCP", "HTTP"],
+        correct: 2,
+      },
+      {
+        q: "What does DNS stand for?",
+        options: [
+          "Dynamic Network Service",
+          "Domain Name System",
+          "Data Network Server",
+          "Distributed Name Service",
+        ],
+        correct: 1,
+      },
+      {
+        q: "Which port does HTTPS use by default?",
+        options: ["80", "443", "8080", "22"],
+        correct: 1,
+      },
+      {
+        q: "What is the purpose of ARP?",
+        options: [
+          "Resolve IP to MAC address",
+          "Encrypt data",
+          "Route packets",
+          "Assign IP addresses",
+        ],
+        correct: 0,
+      },
+    ],
+  },
+  {
+    id: "dbms",
+    title: "Database Management",
+    icon: "🗃️",
+    description: "SQL, NoSQL, Normalization, Transactions",
+    difficulty: "Intermediate",
+    diffColor: "text-amber-400 bg-amber-500/10",
+    topics: ["SQL Basics", "Joins", "Normalization", "Transactions", "NoSQL"],
+    resources: [
+      {
+        type: "pdf",
+        label: "SQL Cheat Sheet",
+        url: "https://www.sqltutorial.org/sql-cheat-sheet/",
+      },
+      {
+        type: "video",
+        label: "SQL Full Course",
+        url: "https://www.youtube.com/watch?v=HXV3zeQKqGY",
+      },
+    ],
+    quiz: [
+      {
+        q: "Which SQL clause filters records?",
+        options: ["ORDER BY", "GROUP BY", "WHERE", "HAVING"],
+        correct: 2,
+      },
+      {
+        q: "What does ACID stand for in databases?",
+        options: [
+          "Atomicity, Consistency, Isolation, Durability",
+          "Array, Class, Index, Data",
+          "Access, Control, Integrity, Distribution",
+          "Algorithm, Compute, Input, Delete",
+        ],
+        correct: 0,
+      },
+      {
+        q: "Which normal form eliminates partial dependency?",
+        options: ["1NF", "2NF", "3NF", "BCNF"],
+        correct: 1,
+      },
+      {
+        q: "Which SQL join returns all records from both tables?",
+        options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+        correct: 3,
+      },
+      {
+        q: "MongoDB is what type of database?",
+        options: ["Relational", "Graph", "NoSQL Document", "Time-series"],
+        correct: 2,
+      },
+    ],
+  },
+  {
+    id: "ml",
+    title: "Machine Learning",
+    icon: "🧠",
+    description: "Supervised, Unsupervised, Neural Networks",
+    difficulty: "Advanced",
+    diffColor: "text-red-400 bg-red-500/10",
+    topics: [
+      "Supervised Learning",
+      "Unsupervised Learning",
+      "Neural Networks",
+      "Evaluation Metrics",
+      "Feature Engineering",
+    ],
+    resources: [
+      {
+        type: "pdf",
+        label: "ML Cheat Sheet",
+        url: "https://ml-cheatsheet.readthedocs.io/",
+      },
+      {
+        type: "video",
+        label: "ML by Andrew Ng",
+        url: "https://www.youtube.com/watch?v=jGwO_UgTS7I",
+      },
+    ],
+    quiz: [
+      {
+        q: "Which algorithm is used for classification?",
+        options: ["Linear Regression", "K-Means", "Logistic Regression", "PCA"],
+        correct: 2,
+      },
+      {
+        q: "What is overfitting?",
+        options: [
+          "Model performs well on test data only",
+          "Model too complex, memorizes training data",
+          "Model is too simple",
+          "Training takes too long",
+        ],
+        correct: 1,
+      },
+      {
+        q: "Which metric is used for classification performance?",
+        options: ["RMSE", "MAE", "F1 Score", "R-Squared"],
+        correct: 2,
+      },
+      {
+        q: "Unsupervised learning involves?",
+        options: [
+          "Labeled data",
+          "Unlabeled data",
+          "Reinforcement signals",
+          "Supervised feedback",
+        ],
+        correct: 1,
+      },
+      {
+        q: "What is a neuron in neural networks?",
+        options: [
+          "A data point",
+          "A weighted computation unit",
+          "A loss function",
+          "A training algorithm",
+        ],
+        correct: 1,
       },
     ],
   },
 ];
 
+interface ModuleQuizState {
+  moduleId: string;
+  currentQ: number;
+  selected: number | null;
+  answered: boolean;
+  score: number;
+  finished: boolean;
+}
+
 const TypingIndicator = ({ companionImg }: { companionImg: string }) => (
-  <div className="flex items-end gap-2 slide-in-up">
+  <div className="flex items-end gap-3 slide-in-up">
     <img
       src={companionImg}
       alt="companion"
       className="w-8 h-8 rounded-full object-cover shrink-0"
     />
-    <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-card border border-border">
-      <div className="flex gap-1 items-center">
-        <span className="typing-dot w-2 h-2 rounded-full bg-primary/40" />
-        <span className="typing-dot w-2 h-2 rounded-full bg-primary/40" />
-        <span className="typing-dot w-2 h-2 rounded-full bg-primary/40" />
+    <div className="bg-card border border-border rounded-2xl px-4 py-3">
+      <div className="flex gap-1.5 items-center">
+        <span className="typing-dot w-2 h-2 rounded-full bg-primary/60" />
+        <span className="typing-dot w-2 h-2 rounded-full bg-primary/60" />
+        <span className="typing-dot w-2 h-2 rounded-full bg-primary/60" />
+        <span className="text-xs text-muted-foreground ml-1">thinking...</span>
       </div>
     </div>
   </div>
 );
 
-type BottomTab = "chat" | "modules" | "quiz" | "problems" | "dashboard";
+type BottomTab = "chat" | "modules" | "events" | "problems" | "dashboard";
 
 async function callAI(
   userMessage: string,
@@ -160,7 +606,7 @@ async function callAI(
   claudeKey: string,
   openaiKey: string,
 ): Promise<string> {
-  const systemPrompt = `You are ${companionName}, a kawaii AI study companion with a ${personality} personality. You help students study Computer Science topics. Keep responses short (2-3 sentences), warm, encouraging, and educational. Use occasional emojis.`;
+  const systemPrompt = `You are ${companionName}, an AI study companion with a ${personality} personality. Help students study Computer Science. Keep responses concise (2-3 sentences), warm, and educational. Use occasional relevant emojis.`;
 
   if (claudeKey) {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -214,31 +660,22 @@ export default function StudyApp() {
     setCurrentProblemId,
     messages,
     addMessage,
-    activeTopic,
-    setActiveTopic,
     setShowLoveCall,
     frustrationCount,
     setFrustrationCount,
     xpFlash,
     setXpFlash,
-    spFlash,
-    setSpFlash,
     openaiKey,
-    setOpenaiKey,
     claudeKey,
-    setClaudeKey,
     focusModeEnabled,
-    setFocusModeEnabled,
   } = useApp();
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [burnoutMode, setBurnoutMode] = useState(false);
   const [activeTab, setActiveTab] = useState<BottomTab>("chat");
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState(openaiKey);
-  const [claudeKeyInput, setClaudeKeyInput] = useState(claudeKey);
   const [breakTipIdx, setBreakTipIdx] = useState(0);
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  const [moduleQuiz, setModuleQuiz] = useState<ModuleQuizState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const addMessageMutation = useAddMessage();
   const pick = useResponseQueue();
@@ -246,6 +683,7 @@ export default function StudyApp() {
   const preset =
     COMPANION_PRESETS.find((p) => p.personality === user.personality) ??
     COMPANION_PRESETS[0];
+  const companionImage = user.companionCustomPhoto || preset.image;
   const xpProgress = ((user.xp % XP_PER_LEVEL) / XP_PER_LEVEL) * 100;
   const level = Math.floor(user.xp / XP_PER_LEVEL) + 1;
 
@@ -253,7 +691,6 @@ export default function StudyApp() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   });
 
-  // Rotate break tips every 45 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setBreakTipIdx((prev) => (prev + 1) % BREAK_TIPS.length);
@@ -261,7 +698,6 @@ export default function StudyApp() {
     return () => clearInterval(interval);
   }, []);
 
-  // Focus Mode — detect tab away
   const awayStartRef = useRef<number | null>(null);
   useEffect(() => {
     if (!focusModeEnabled) return;
@@ -273,7 +709,7 @@ export default function StudyApp() {
         if (away && Date.now() - away > 30000) {
           addMessage({
             role: "companion",
-            text: `Hey!! 👀 I noticed you were away for a bit~ You're not scrolling Instagram instead of studying, are you? 😏 Come back to me, let's focus! 💕`,
+            text: `Hey! 👀 I noticed you were away for a bit~ Come back, let's focus! 💪`,
           });
         }
         awayStartRef.current = null;
@@ -309,12 +745,6 @@ export default function StudyApp() {
     [frustrationCount, preset, setFrustrationCount, pick],
   );
 
-  const awardSP = useCallback(() => {
-    setUser({ studyPoints: user.studyPoints + 1 });
-    setSpFlash(1);
-    setTimeout(() => setSpFlash(null), 1500);
-  }, [user.studyPoints, setUser, setSpFlash]);
-
   const sendMessage = useCallback(async () => {
     const text = inputText.trim();
     if (!text) return;
@@ -338,7 +768,6 @@ export default function StudyApp() {
         setUser({ xp: user.xp + 2 });
         setXpFlash(2);
         setTimeout(() => setXpFlash(null), 1500);
-        awardSP();
       } catch {
         setIsTyping(false);
         const fallback = generateResponse(text);
@@ -347,7 +776,6 @@ export default function StudyApp() {
         setUser({ xp: user.xp + 2 });
         setXpFlash(2);
         setTimeout(() => setXpFlash(null), 1500);
-        awardSP();
       }
     } else {
       setTimeout(
@@ -359,7 +787,6 @@ export default function StudyApp() {
           setUser({ xp: user.xp + 2 });
           setXpFlash(2);
           setTimeout(() => setXpFlash(null), 1500);
-          awardSP();
         },
         600 + Math.random() * 400,
       );
@@ -371,7 +798,6 @@ export default function StudyApp() {
     generateResponse,
     setUser,
     setXpFlash,
-    awardSP,
     user.xp,
     user.companionName,
     user.personality,
@@ -382,7 +808,10 @@ export default function StudyApp() {
   const greetingRef = useRef<{
     preset: typeof preset;
     addMsg: typeof addMessage;
-  }>({ preset, addMsg: addMessage });
+  }>({
+    preset,
+    addMsg: addMessage,
+  });
   greetingRef.current = { preset, addMsg: addMessage };
   const didGreet = useRef(false);
   useEffect(() => {
@@ -395,12 +824,53 @@ export default function StudyApp() {
     }
   }, []);
 
-  const topicIcons: Record<string, string> = {
-    "Data Structures": "🗄️",
-    Algorithms: "⚡",
-    Python: "🐍",
-    "HTML/CSS": "🌐",
-    OOP: "🏗️",
+  // Module Quiz handlers
+  const startModuleQuiz = (moduleId: string) => {
+    setModuleQuiz({
+      moduleId,
+      currentQ: 0,
+      selected: null,
+      answered: false,
+      score: 0,
+      finished: false,
+    });
+  };
+
+  const handleQuizAnswer = (idx: number) => {
+    if (!moduleQuiz || moduleQuiz.answered) return;
+    const mod = STUDY_MODULES.find((m) => m.id === moduleQuiz.moduleId);
+    if (!mod) return;
+    const correct = mod.quiz[moduleQuiz.currentQ].correct;
+    const isCorrect = idx === correct;
+    const newScore = isCorrect ? moduleQuiz.score + 1 : moduleQuiz.score;
+    setModuleQuiz((prev) =>
+      prev ? { ...prev, selected: idx, answered: true, score: newScore } : prev,
+    );
+  };
+
+  const handleQuizNext = () => {
+    if (!moduleQuiz) return;
+    const mod = STUDY_MODULES.find((m) => m.id === moduleQuiz.moduleId);
+    if (!mod) return;
+    if (moduleQuiz.currentQ + 1 >= mod.quiz.length) {
+      // Finished
+      const xpEarned = moduleQuiz.score * 15;
+      setUser({ xp: user.xp + xpEarned });
+      setXpFlash(xpEarned);
+      setTimeout(() => setXpFlash(null), 1500);
+      setModuleQuiz((prev) => (prev ? { ...prev, finished: true } : prev));
+    } else {
+      setModuleQuiz((prev) =>
+        prev
+          ? {
+              ...prev,
+              currentQ: prev.currentQ + 1,
+              selected: null,
+              answered: false,
+            }
+          : prev,
+      );
+    }
   };
 
   const bottomNavItems: {
@@ -409,12 +879,8 @@ export default function StudyApp() {
     label: string;
   }[] = [
     { tab: "chat", icon: <Home className="w-5 h-5" />, label: "Chat" },
-    {
-      tab: "modules",
-      icon: <BookOpen className="w-5 h-5" />,
-      label: "Modules",
-    },
-    { tab: "quiz", icon: <Star className="w-5 h-5" />, label: "Quiz" },
+    { tab: "modules", icon: <BookOpen className="w-5 h-5" />, label: "Study" },
+    { tab: "events", icon: <Calendar className="w-5 h-5" />, label: "Events" },
     { tab: "problems", icon: <Code className="w-5 h-5" />, label: "Problems" },
     {
       tab: "dashboard",
@@ -424,10 +890,6 @@ export default function StudyApp() {
   ];
 
   const handleTabClick = (tab: BottomTab) => {
-    if (tab === "quiz") {
-      setPage("quiz");
-      return;
-    }
     if (tab === "problems") {
       setCurrentProblemId(null);
       setPage("problems");
@@ -447,120 +909,29 @@ export default function StudyApp() {
       : "💬 Local Mode";
 
   return (
-    <div className="h-screen bg-muted flex flex-col overflow-hidden">
-      {/* Settings Sheet */}
-      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <SheetContent side="right" className="w-80">
-          <SheetHeader>
-            <SheetTitle>⚙️ Settings</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6 space-y-4">
-            {/* AI Status */}
-            <div className="bg-muted rounded-xl px-3 py-2 text-sm font-semibold text-center text-foreground">
-              {activeAILabel}
-            </div>
-
-            {/* Claude Key */}
-            <div>
-              <label
-                htmlFor="claude-key"
-                className="text-sm font-semibold text-foreground block mb-1.5"
-              >
-                Claude API Key (Priority)
-              </label>
-              <Input
-                id="claude-key"
-                data-ocid="settings.claude_key.input"
-                type="password"
-                value={claudeKeyInput}
-                onChange={(e) => setClaudeKeyInput(e.target.value)}
-                placeholder="sk-ant-..."
-                className="rounded-xl h-10 font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Claude Sonnet 4.5 — priority over OpenAI.
-              </p>
-            </div>
-
-            {/* OpenAI Key */}
-            <div>
-              <label
-                htmlFor="openai-key"
-                className="text-sm font-semibold text-foreground block mb-1.5"
-              >
-                OpenAI API Key (Fallback)
-              </label>
-              <Input
-                id="openai-key"
-                data-ocid="settings.openai_key.input"
-                type="password"
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="sk-..."
-                className="rounded-xl h-10 font-mono text-sm"
-              />
-            </div>
-
-            {/* Focus Mode */}
-            <div className="flex items-center justify-between bg-muted rounded-xl px-3 py-3">
-              <div>
-                <Label className="text-sm font-semibold text-foreground">
-                  🎯 Focus Mode
-                </Label>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Nudge if you go away &gt;30s
-                </p>
-              </div>
-              <Switch
-                data-ocid="settings.focus_mode.switch"
-                checked={focusModeEnabled}
-                onCheckedChange={setFocusModeEnabled}
-              />
-            </div>
-
-            <Button
-              data-ocid="settings.save.button"
-              onClick={() => {
-                setClaudeKey(claudeKeyInput);
-                setOpenaiKey(apiKeyInput);
-                setSettingsOpen(false);
-              }}
-              className="w-full rounded-xl bg-primary text-primary-foreground font-semibold"
-            >
-              Save Settings
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Top bar */}
-      <header className="bg-white border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
+      <header className="bg-card border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">C&amp;C</span>
+          <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
+            <span className="text-primary text-xs font-bold">C&amp;C</span>
           </div>
           <span className="font-bold text-foreground">Code &amp; Crush</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground hidden sm:block">
-            Hi, <strong>{user.username}</strong>! 💕
+          <span className="text-xs text-muted-foreground hidden sm:block bg-muted px-2 py-0.5 rounded-full">
+            {activeAILabel}
           </span>
-          <Button
-            data-ocid="study.settings.button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setSettingsOpen(true)}
-            className="rounded-full text-muted-foreground hover:text-foreground"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground hidden sm:block">
+            Hi, <strong className="text-foreground">{user.username}</strong>!
+          </span>
           <Button
             data-ocid="study.call.button"
             variant="ghost"
             size="sm"
             title="Love Call"
             onClick={() => setShowLoveCall(true)}
-            className="rounded-full text-muted-foreground hover:text-foreground"
+            className="rounded-full text-primary hover:text-primary/80"
           >
             <Phone className="w-4 h-4" />
           </Button>
@@ -581,41 +952,21 @@ export default function StudyApp() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-64 bg-white border-r border-border flex flex-col p-4 gap-4 shrink-0 hidden md:flex">
+        <aside className="w-64 bg-card border-r border-border flex flex-col p-4 gap-4 shrink-0 hidden md:flex">
           <div className="text-center py-4">
             <motion.div
               animate={{ scale: [1, 1.03, 1] }}
               transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
               className={`w-20 h-20 rounded-full overflow-hidden mx-auto mb-3 ring-4 shadow-glow ${
-                burnoutMode
-                  ? "ring-red-300"
-                  : "ring-pink-400 shadow-[0_0_20px_rgba(240,106,155,0.4)]"
+                burnoutMode ? "ring-red-500" : "ring-primary"
               }`}
             >
               <img
-                src={preset.image}
+                src={companionImage}
                 alt={user.companionName}
                 className="w-full h-full object-cover"
               />
             </motion.div>
-            {burnoutMode && (
-              <div className="flex justify-center gap-0.5 mb-1">
-                {["h1", "h2", "h3", "h4", "h5"].map((hk, i) => (
-                  <motion.span
-                    key={hk}
-                    animate={{ y: [0, -4, 0] }}
-                    transition={{
-                      duration: 0.6,
-                      delay: i * 0.1,
-                      repeat: Number.POSITIVE_INFINITY,
-                    }}
-                    className="text-red-400 text-sm"
-                  >
-                    ♥
-                  </motion.span>
-                ))}
-              </div>
-            )}
             <h3 className="font-bold text-foreground">{user.companionName}</h3>
             <p className="text-xs text-muted-foreground">
               {preset.traits.split(" · ")[0]}
@@ -625,7 +976,7 @@ export default function StudyApp() {
           <div className="bg-muted rounded-2xl p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-semibold text-foreground flex items-center gap-1">
-                <Zap className="w-3 h-3 text-yellow-500" /> Match Level {level}
+                <Zap className="w-3 h-3 text-yellow-400" /> Level {level}
               </span>
               <span className="text-xs text-muted-foreground">
                 {user.xp} XP
@@ -635,20 +986,11 @@ export default function StudyApp() {
             <p className="text-xs text-muted-foreground mt-1 text-right">
               {XP_PER_LEVEL - (user.xp % XP_PER_LEVEL)} XP to next level
             </p>
-            {/* Study Points */}
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground flex items-center gap-1">
-                ⭐ Study Points
-              </span>
-              <span className="text-xs font-bold text-yellow-500 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200">
-                {user.studyPoints} SP
-              </span>
-            </div>
           </div>
 
           <div className="bg-muted rounded-2xl p-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-              <Flame className="w-5 h-5 text-orange-500" />
+            <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+              <Flame className="w-5 h-5 text-orange-400" />
             </div>
             <div>
               <p className="font-bold text-foreground text-sm">
@@ -674,7 +1016,7 @@ export default function StudyApp() {
                 {user.badges.map((b) => (
                   <span
                     key={b}
-                    className="text-xs bg-white border border-border rounded-full px-2 py-0.5"
+                    className="text-xs bg-primary/20 text-primary border border-primary/30 rounded-full px-2 py-0.5"
                   >
                     {b}
                   </span>
@@ -682,22 +1024,40 @@ export default function StudyApp() {
               </div>
             )}
           </div>
+
+          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-3 mt-auto">
+            <p className="text-xs font-bold text-primary mb-1.5">
+              💡 Break Tip
+            </p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={breakTipIdx}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.3 }}
+                className="text-xs text-foreground leading-relaxed"
+              >
+                {BREAK_TIPS[breakTipIdx]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
         </aside>
 
-        {/* Center: Chat or Modules panel */}
+        {/* Center: Main Panel */}
         <main className="flex-1 flex flex-col min-w-0">
-          {/* Modules panel */}
+          {/* Study Modules */}
           {activeTab === "modules" && (
-            <div className="flex-1 bg-white p-4 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto p-4">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
                 Study Modules
               </p>
-              <div className="space-y-3">
+              <div className="space-y-3 max-w-2xl mx-auto pb-20">
                 {STUDY_MODULES.map((mod) => (
                   <div
                     key={mod.id}
                     data-ocid={`modules.${mod.id}.panel`}
-                    className={`rounded-2xl border bg-gradient-to-br ${mod.color} ${mod.border} overflow-hidden`}
+                    className="rounded-2xl border border-border bg-card overflow-hidden"
                   >
                     <button
                       type="button"
@@ -718,6 +1078,11 @@ export default function StudyApp() {
                           <div className="text-xs text-muted-foreground">
                             {mod.description}
                           </div>
+                          <span
+                            className={`text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block ${mod.diffColor}`}
+                          >
+                            {mod.difficulty}
+                          </span>
                         </div>
                       </div>
                       <motion.span
@@ -739,26 +1104,48 @@ export default function StudyApp() {
                           transition={{ duration: 0.25 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-4 pb-4 space-y-2">
-                            {mod.resources.map((r) => (
-                              <a
-                                key={r.url}
-                                href={r.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-3 bg-white rounded-xl px-3 py-2.5 hover:shadow-sm transition-shadow border border-white/60"
-                              >
-                                {r.type === "pdf" ? (
-                                  <FileText className="w-4 h-4 text-blue-500 shrink-0" />
-                                ) : (
-                                  <Play className="w-4 h-4 text-red-500 shrink-0" />
-                                )}
-                                <span className="text-sm font-medium text-foreground flex-1">
-                                  {r.label}
+                          <div className="px-4 pb-4 space-y-3">
+                            {/* Topics */}
+                            <div className="flex flex-wrap gap-1.5">
+                              {mod.topics.map((t) => (
+                                <span
+                                  key={t}
+                                  className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
+                                >
+                                  {t}
                                 </span>
-                                <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
-                              </a>
-                            ))}
+                              ))}
+                            </div>
+                            {/* Resources */}
+                            <div className="space-y-2">
+                              {mod.resources.map((r) => (
+                                <a
+                                  key={r.url}
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-3 bg-muted rounded-xl px-3 py-2.5 hover:bg-accent transition-colors border border-border"
+                                >
+                                  {r.type === "pdf" ? (
+                                    <FileText className="w-4 h-4 text-blue-400 shrink-0" />
+                                  ) : (
+                                    <Play className="w-4 h-4 text-red-400 shrink-0" />
+                                  )}
+                                  <span className="text-sm font-medium text-foreground flex-1">
+                                    {r.label}
+                                  </span>
+                                  <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
+                                </a>
+                              ))}
+                            </div>
+                            {/* Quiz Button */}
+                            <Button
+                              data-ocid={`modules.${mod.id}.quiz.button`}
+                              onClick={() => startModuleQuiz(mod.id)}
+                              className="w-full rounded-xl h-10 bg-primary text-primary-foreground font-semibold"
+                            >
+                              📝 Take Quiz ({mod.quiz.length} questions)
+                            </Button>
                           </div>
                         </motion.div>
                       )}
@@ -769,18 +1156,36 @@ export default function StudyApp() {
             </div>
           )}
 
-          {/* Chat panel */}
+          {/* Events Tab */}
+          {activeTab === "events" && <EventsPage />}
+
+          {/* Gemini-Style Chat */}
           {activeTab === "chat" && (
             <>
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4 max-w-2xl mx-auto">
+              <ScrollArea className="flex-1 px-4 py-6">
+                <div className="space-y-6 max-w-[700px] mx-auto">
                   {messages.length === 0 && (
                     <div
                       className="text-center py-16"
                       data-ocid="chat.empty_state"
                     >
-                      <p className="text-muted-foreground">
-                        Start a conversation! 💕
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                        className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 ring-4 ring-primary/30"
+                      >
+                        <img
+                          src={companionImage}
+                          alt={user.companionName}
+                          className="w-full h-full object-cover"
+                        />
+                      </motion.div>
+                      <h3 className="text-lg font-bold text-foreground mb-1">
+                        {user.companionName}
+                      </h3>
+                      <p className="text-muted-foreground text-sm">
+                        Start a conversation! Ask me anything about CS 💻
                       </p>
                     </div>
                   )}
@@ -788,33 +1193,45 @@ export default function StudyApp() {
                     {messages.map((msg, i) => (
                       <motion.div
                         key={msg.id}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
-                        className={`flex items-end gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                         data-ocid={`chat.message.${i + 1}`}
                       >
-                        {msg.role === "companion" && (
-                          <img
-                            src={preset.image}
-                            alt="companion"
-                            className="w-8 h-8 rounded-full object-cover shrink-0"
-                          />
-                        )}
-                        <div
-                          className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-white border border-border shadow-card rounded-bl-sm text-foreground"}`}
-                        >
-                          {msg.text}
-                        </div>
-                        {msg.role === "user" && (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                            {user.username.charAt(0).toUpperCase() || "U"}
+                        {msg.role === "companion" ? (
+                          <div className="flex items-start gap-3">
+                            <img
+                              src={companionImage}
+                              alt="companion"
+                              className="w-8 h-8 rounded-full object-cover shrink-0 mt-1"
+                            />
+                            <div className="flex-1">
+                              <p className="text-xs font-semibold text-primary mb-1.5">
+                                {user.companionName}
+                              </p>
+                              <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed text-foreground">
+                                {msg.text}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end">
+                            <div className="max-w-[75%]">
+                              <p className="text-xs text-muted-foreground text-right mb-1.5">
+                                You
+                              </p>
+                              <div className="bg-primary/15 border border-primary/20 rounded-2xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed text-foreground">
+                                {msg.text}
+                              </div>
+                            </div>
                           </div>
                         )}
                       </motion.div>
                     ))}
                   </AnimatePresence>
-                  {isTyping && <TypingIndicator companionImg={preset.image} />}
+                  {isTyping && (
+                    <TypingIndicator companionImg={companionImage} />
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
@@ -826,141 +1243,55 @@ export default function StudyApp() {
                     initial={{ opacity: 0, y: 0, scale: 0.5 }}
                     animate={{ opacity: 1, y: -40, scale: 1.2 }}
                     exit={{ opacity: 0, y: -80, scale: 0.8 }}
-                    className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-pink-500 text-white font-extrabold text-xl px-5 py-2 rounded-full shadow-lg pointer-events-none z-40 flex items-center gap-1"
+                    className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground font-extrabold text-xl px-5 py-2 rounded-full shadow-lg pointer-events-none z-40 flex items-center gap-1"
                   >
-                    💗 +{xpFlash} XP!
+                    ⚡ +{xpFlash} XP!
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* SP Flash */}
-              <AnimatePresence>
-                {spFlash !== null && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, y: -80, scale: 1.1 }}
-                    exit={{ opacity: 0, y: -120, scale: 0.8 }}
-                    className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-yellow-400 text-white font-extrabold text-lg px-4 py-1.5 rounded-full shadow-lg pointer-events-none z-40 flex items-center gap-1"
-                  >
-                    ⭐ +{spFlash} SP!
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="bg-white border-t border-border p-4">
-                <div className="max-w-2xl mx-auto flex gap-3">
-                  <Input
-                    data-ocid="chat.message.input"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                    placeholder={`Message ${user.companionName}... 💕`}
-                    className="rounded-full h-12 border-2 focus:border-primary flex-1"
-                  />
-                  <Button
-                    data-ocid="chat.send.button"
-                    onClick={sendMessage}
-                    disabled={!inputText.trim() || isTyping}
-                    className="rounded-full w-12 h-12 p-0 bg-primary text-primary-foreground shrink-0"
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
+              {/* Gemini-style Input */}
+              <div className="bg-background border-t border-border p-4 pb-2">
+                <div className="max-w-[700px] mx-auto">
+                  <div className="flex items-end gap-2 bg-card border border-border rounded-2xl px-4 py-3 focus-within:border-primary/50 transition-colors">
+                    <textarea
+                      data-ocid="chat.message.input"
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                      placeholder={`Ask ${user.companionName} anything...`}
+                      rows={1}
+                      className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground resize-none outline-none text-sm leading-relaxed min-h-[24px] max-h-32"
+                      style={{ scrollbarWidth: "none" }}
+                    />
+                    <Button
+                      data-ocid="chat.send.button"
+                      onClick={sendMessage}
+                      disabled={!inputText.trim() || isTyping}
+                      size="sm"
+                      className="rounded-full w-9 h-9 p-0 bg-primary text-primary-foreground shrink-0 shadow-glow-sm"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    {user.companionName} can make mistakes. Verify important
+                    info.
+                  </p>
                 </div>
               </div>
             </>
           )}
         </main>
-
-        {/* Right Sidebar — desktop */}
-        <aside className="w-64 bg-white border-l border-border p-4 flex flex-col gap-4 shrink-0 hidden lg:flex">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-              Study Topics
-            </p>
-            <div className="space-y-2">
-              {Object.entries(topicIcons).map(([topic, icon]) => (
-                <button
-                  type="button"
-                  key={topic}
-                  data-ocid={`topic.${topic.toLowerCase().replace(/[^a-z0-9]/g, "_")}.button`}
-                  onClick={() => setActiveTopic(topic)}
-                  className={`w-full text-left rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 flex items-center gap-2 ${activeTopic === topic ? "bg-primary/10 text-primary border border-primary/20" : "hover:bg-muted text-foreground"}`}
-                >
-                  <span>{icon}</span>
-                  {topic}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Button
-            data-ocid="quiz.start.button"
-            onClick={() => setPage("quiz")}
-            className="w-full rounded-xl h-12 font-bold bg-primary text-primary-foreground"
-          >
-            <Star className="w-4 h-4 mr-2" /> Start Quiz
-          </Button>
-
-          <Button
-            data-ocid="problems.open.button"
-            onClick={() => {
-              setCurrentProblemId(null);
-              setPage("problems");
-            }}
-            variant="outline"
-            className="w-full rounded-xl h-12 font-bold border-2"
-          >
-            <Code className="w-4 h-4 mr-2" /> Code Studio 💻
-          </Button>
-
-          <Button
-            data-ocid="love_call.open_modal_button"
-            onClick={() => setShowLoveCall(true)}
-            variant="outline"
-            className="w-full rounded-xl h-12 font-bold border-2"
-            style={{
-              borderColor: preset.accentColor,
-              color: preset.accentColor,
-            }}
-          >
-            <Phone className="w-4 h-4 mr-2" /> Love Call 📞
-          </Button>
-
-          <div className="bg-muted rounded-2xl p-3">
-            <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
-              <BookOpen className="w-3 h-3" /> Current Topic
-            </p>
-            <p className="font-bold text-primary text-sm">
-              {topicIcons[activeTopic]} {activeTopic}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Ask me anything about {activeTopic}!
-            </p>
-          </div>
-
-          {/* Break Tips */}
-          <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-3 border border-pink-100 mt-auto">
-            <p className="text-xs font-bold text-primary mb-1.5">
-              💡 Break Tip
-            </p>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={breakTipIdx}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.3 }}
-                className="text-xs text-foreground leading-relaxed"
-              >
-                {BREAK_TIPS[breakTipIdx]}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-        </aside>
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="bg-white border-t border-border shrink-0 safe-area-pb">
+      <nav className="bg-card border-t border-border shrink-0">
         <div className="flex items-stretch">
           {bottomNavItems.map((item) => (
             <button
@@ -968,12 +1299,11 @@ export default function StudyApp() {
               key={item.tab}
               data-ocid={`bottomnav.${item.tab}.button`}
               onClick={() => handleTabClick(item.tab)}
-              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors ${
+              className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-xs font-medium transition-colors ${
                 activeTab === item.tab &&
-                item.tab !== "quiz" &&
                 item.tab !== "problems" &&
                 item.tab !== "dashboard"
-                  ? "text-primary bg-primary/5"
+                  ? "text-primary border-t-2 border-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -983,6 +1313,137 @@ export default function StudyApp() {
           ))}
         </div>
       </nav>
+
+      {/* Module Quiz Modal */}
+      <AnimatePresence>
+        {moduleQuiz &&
+          (() => {
+            const mod = STUDY_MODULES.find((m) => m.id === moduleQuiz.moduleId);
+            if (!mod) return null;
+            return (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+                data-ocid="modules.quiz.modal"
+              >
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-card-hover"
+                >
+                  {moduleQuiz.finished ? (
+                    <div className="text-center">
+                      <div className="text-5xl mb-3">
+                        {moduleQuiz.score >= 4
+                          ? "🎉"
+                          : moduleQuiz.score >= 3
+                            ? "👍"
+                            : "💪"}
+                      </div>
+                      <h3 className="text-xl font-extrabold text-foreground mb-2">
+                        Quiz Complete!
+                      </h3>
+                      <p className="text-muted-foreground mb-1">You scored</p>
+                      <p className="text-4xl font-extrabold text-primary mb-4">
+                        {moduleQuiz.score}/{mod.quiz.length}
+                      </p>
+                      <p className="text-sm text-foreground mb-6">
+                        +{moduleQuiz.score * 15} XP earned!
+                      </p>
+                      <Button
+                        data-ocid="modules.quiz.close.button"
+                        onClick={() => setModuleQuiz(null)}
+                        className="w-full rounded-full bg-primary text-primary-foreground font-semibold"
+                      >
+                        Done!
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                            {mod.title}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            Question {moduleQuiz.currentQ + 1} of{" "}
+                            {mod.quiz.length}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          data-ocid="modules.quiz.cancel.button"
+                          onClick={() => setModuleQuiz(null)}
+                          className="text-muted-foreground hover:text-foreground text-lg"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-1.5 mb-5">
+                        <div
+                          className="bg-primary h-1.5 rounded-full transition-all"
+                          style={{
+                            width: `${(moduleQuiz.currentQ / mod.quiz.length) * 100}%`,
+                          }}
+                        />
+                      </div>
+                      <p className="text-foreground font-semibold text-sm leading-relaxed mb-5">
+                        {mod.quiz[moduleQuiz.currentQ].q}
+                      </p>
+                      <div className="space-y-2 mb-4">
+                        {mod.quiz[moduleQuiz.currentQ].options.map(
+                          (opt, idx) => {
+                            let style =
+                              "border-border bg-muted text-foreground";
+                            if (moduleQuiz.answered) {
+                              if (
+                                idx === mod.quiz[moduleQuiz.currentQ].correct
+                              ) {
+                                style =
+                                  "border-green-500 bg-green-500/10 text-green-300";
+                              } else if (idx === moduleQuiz.selected) {
+                                style =
+                                  "border-red-500 bg-red-500/10 text-red-300";
+                              }
+                            } else if (moduleQuiz.selected === idx) {
+                              style =
+                                "border-primary bg-primary/10 text-primary";
+                            }
+                            return (
+                              <button
+                                type="button"
+                                key={opt}
+                                onClick={() => handleQuizAnswer(idx)}
+                                disabled={moduleQuiz.answered}
+                                className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${style}`}
+                              >
+                                {opt}
+                              </button>
+                            );
+                          },
+                        )}
+                      </div>
+                      {moduleQuiz.answered && (
+                        <Button
+                          data-ocid="modules.quiz.next.button"
+                          onClick={handleQuizNext}
+                          className="w-full rounded-full bg-primary text-primary-foreground font-semibold"
+                        >
+                          {moduleQuiz.currentQ + 1 >= mod.quiz.length
+                            ? "See Results"
+                            : "Next Question"}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              </motion.div>
+            );
+          })()}
+      </AnimatePresence>
     </div>
   );
 }

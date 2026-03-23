@@ -52,6 +52,10 @@ async function askOpenAI({
 You are supportive, warm, and give clear technical guidance. If asked for a hint, use this hint: "${problemHint}". 
 Keep responses concise (2-3 sentences max). Use light emojis for warmth.`;
 
+  if (!claudeKey && !openaiKey) {
+    return "API Key Missing in Settings";
+  }
+
   // Try Claude first
   if (claudeKey) {
     try {
@@ -76,7 +80,6 @@ Keep responses concise (2-3 sentences max). Use light emojis for warmth.`;
     } catch (_) {}
   }
 
-  // Fall back to OpenAI
   if (openaiKey) {
     try {
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -86,7 +89,7 @@ Keep responses concise (2-3 sentences max). Use light emojis for warmth.`;
           Authorization: `Bearer ${openaiKey}`,
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
+          model: "gpt-4o",
           max_tokens: 200,
           messages: [
             { role: "system", content: systemPrompt },
@@ -94,23 +97,18 @@ Keep responses concise (2-3 sentences max). Use light emojis for warmth.`;
           ],
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        return data.choices?.[0]?.message?.content ?? "";
+      if (!res.ok) {
+        console.error(`OpenAI error ${res.status}:`, await res.text());
+        throw new Error(`OpenAI responded with status ${res.status}`);
       }
-    } catch (_) {}
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content ?? "";
+    } catch (err) {
+      console.error("OpenAI fetch failed:", err);
+    }
   }
 
-  // Local fallback
-  const lower = userMessage.toLowerCase();
-  if (
-    lower.includes("hint") ||
-    lower.includes("help") ||
-    lower.includes("stuck")
-  ) {
-    return `💡 Here's a hint: ${problemHint}`;
-  }
-  return "You're doing great! Keep going — I believe in you! 💕 (Add your API key in Dashboard for smarter AI answers!)";
+  return "API Key Missing in Settings";
 }
 
 function BottomNav() {

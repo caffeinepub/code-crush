@@ -605,8 +605,13 @@ async function callAI(
   personality: string,
   claudeKey: string,
   openaiKey: string,
+  history: Array<{ role: string; content: string }> = [],
 ): Promise<string> {
   const systemPrompt = `You are ${companionName}, an AI study companion with a ${personality} personality. Help students study Computer Science. Keep responses concise (2-3 sentences), warm, and educational. Use occasional relevant emojis.`;
+
+  if (!claudeKey && !openaiKey) {
+    return "API Key Missing in Settings";
+  }
 
   if (claudeKey) {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -620,7 +625,7 @@ async function callAI(
         model: "claude-sonnet-4-5",
         max_tokens: 150,
         system: systemPrompt,
-        messages: [{ role: "user", content: userMessage }],
+        messages: [...history, { role: "user", content: userMessage }],
       }),
     });
     const data = await res.json();
@@ -628,25 +633,36 @@ async function callAI(
   }
 
   if (openaiKey) {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${openaiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 150,
-      }),
-    });
-    const data = await res.json();
-    return (
-      data.choices?.[0]?.message?.content ?? "Hmm, let me think about that! 💭"
-    );
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...history,
+            { role: "user", content: userMessage },
+          ],
+          max_tokens: 150,
+        }),
+      });
+      if (!res.ok) {
+        console.error(`OpenAI error ${res.status}:`, await res.text());
+        throw new Error(`OpenAI responded with status ${res.status}`);
+      }
+      const data = await res.json();
+      return (
+        data.choices?.[0]?.message?.content ??
+        "Hmm, let me think about that! 💭"
+      );
+    } catch (err) {
+      console.error("OpenAI fetch failed:", err);
+      throw err;
+    }
   }
 
   throw new Error("No API key");
@@ -674,6 +690,9 @@ export default function StudyApp() {
   const [burnoutMode, setBurnoutMode] = useState(false);
   const [activeTab, setActiveTab] = useState<BottomTab>("chat");
   const [breakTipIdx, setBreakTipIdx] = useState(0);
+  const [conversationHistory, setConversationHistory] = useState<
+    Array<{ role: "user" | "assistant"; content: string }>
+  >([]);
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [moduleQuiz, setModuleQuiz] = useState<ModuleQuizState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -753,7 +772,13 @@ export default function StudyApp() {
     setIsTyping(true);
     addMessageMutation.mutate({ role: "user", text });
 
-    if (claudeKey || openaiKey) {
+    {
+      const historySnapshot = conversationHistory;
+      const newHistory = [
+        ...historySnapshot,
+        { role: "user" as const, content: text },
+      ].slice(-10);
+      if (claudeKey || openaiKey) setConversationHistory(newHistory);
       try {
         const response = await callAI(
           text,
@@ -761,13 +786,21 @@ export default function StudyApp() {
           user.personality,
           claudeKey,
           openaiKey,
+          historySnapshot,
         );
         setIsTyping(false);
         addMessage({ role: "companion", text: response });
         addMessageMutation.mutate({ role: "companion", text: response });
-        setUser({ xp: user.xp + 2 });
-        setXpFlash(2);
-        setTimeout(() => setXpFlash(null), 1500);
+        if (response !== "API Key Missing in Settings") {
+          setConversationHistory((prev) =>
+            [...prev, { role: "assistant" as const, content: response }].slice(
+              -10,
+            ),
+          );
+          setUser({ xp: user.xp + 2 });
+          setXpFlash(2);
+          setTimeout(() => setXpFlash(null), 1500);
+        }
       } catch {
         setIsTyping(false);
         const fallback = generateResponse(text);
@@ -777,19 +810,6 @@ export default function StudyApp() {
         setXpFlash(2);
         setTimeout(() => setXpFlash(null), 1500);
       }
-    } else {
-      setTimeout(
-        () => {
-          const response = generateResponse(text);
-          setIsTyping(false);
-          addMessage({ role: "companion", text: response });
-          addMessageMutation.mutate({ role: "companion", text: response });
-          setUser({ xp: user.xp + 2 });
-          setXpFlash(2);
-          setTimeout(() => setXpFlash(null), 1500);
-        },
-        600 + Math.random() * 400,
-      );
     }
   }, [
     inputText,
@@ -803,6 +823,7 @@ export default function StudyApp() {
     user.personality,
     claudeKey,
     openaiKey,
+    conversationHistory,
   ]);
 
   const greetingRef = useRef<{

@@ -118,7 +118,8 @@ declare global {
 }
 
 export default function LoveCallModal() {
-  const { user, showLoveCall, setShowLoveCall } = useApp();
+  const { user, showLoveCall, setShowLoveCall, openaiKey, claudeKey } =
+    useApp();
   const preset =
     COMPANION_PRESETS.find((p) => p.personality === user.personality) ??
     COMPANION_PRESETS[0];
@@ -137,6 +138,74 @@ export default function LoveCallModal() {
       preset.id
     ] ?? VOICE_PROFILES.sakura;
   const companionImage = user.companionCustomPhoto || preset.image;
+
+  const callVoiceAI = async (transcript: string): Promise<string> => {
+    const voiceSystemPrompt = `You are ${user.companionName}, a warm and caring study companion. Respond in 1-2 short sentences as if talking to a friend. Sound natural, human, and supportive. No bullet points. No markdown.`;
+    try {
+      if (claudeKey) {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "x-api-key": claudeKey,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-5",
+            max_tokens: 80,
+            system: voiceSystemPrompt,
+            messages: [{ role: "user", content: transcript }],
+          }),
+        });
+        const data = await res.json();
+        if (data.content?.[0]?.text) return data.content[0].text;
+      } else if (openaiKey) {
+        try {
+          const res = await fetch(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${openaiKey}`,
+              },
+              body: JSON.stringify({
+                model: "gpt-4o",
+                max_tokens: 80,
+                messages: [
+                  { role: "system", content: voiceSystemPrompt },
+                  { role: "user", content: transcript },
+                ],
+              }),
+            },
+          );
+          if (!res.ok) {
+            console.error(`OpenAI error ${res.status}:`, await res.text());
+            throw new Error(`OpenAI responded with status ${res.status}`);
+          }
+          const data = await res.json();
+          if (data.choices?.[0]?.message?.content)
+            return data.choices[0].message.content;
+        } catch (err) {
+          console.error("OpenAI fetch failed:", err);
+        }
+      }
+    } catch {
+      // Fall through to local fallback
+    }
+    // Local fallback
+    const replies =
+      (companionRepliesRef.current as Record<string, string[]>)[
+        user.personality
+      ] ?? [];
+    const reply =
+      replies[Math.floor(Math.random() * replies.length)] ?? "I hear you! 💙";
+    const filler =
+      voiceProfile.fillers[
+        Math.floor(Math.random() * voiceProfile.fillers.length)
+      ];
+    return `${filler} ${reply}`;
+  };
 
   const companionReplies: Record<string, string[]> = useMemo(
     () => ({
@@ -255,29 +324,14 @@ export default function LoveCallModal() {
       setUserTranscript(transcript);
       setIsListening(false);
 
-      // Think then reply
+      // Use AI for reply if key available, else local fallback
       setIsThinking(true);
-      setTimeout(
-        () => {
-          setIsThinking(false);
-          const replies =
-            (companionRepliesRef.current as Record<string, string[]>)[
-              user.personality
-            ] ?? [];
-          const reply =
-            replies[Math.floor(Math.random() * replies.length)] ??
-            "I hear you! 💙";
-          const filler =
-            voiceProfile.fillers[
-              Math.floor(Math.random() * voiceProfile.fillers.length)
-            ];
-          const fullReply = `${filler} ${reply}`;
-          setCompanionReply(fullReply);
-          setDisplayMessage(fullReply);
-          speakText(fullReply);
-        },
-        300 + Math.random() * 500,
-      );
+      callVoiceAI(transcript).then((reply) => {
+        setIsThinking(false);
+        setCompanionReply(reply);
+        setDisplayMessage(reply);
+        speakText(reply);
+      });
     };
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
@@ -286,7 +340,8 @@ export default function LoveCallModal() {
     try {
       recognition.start();
     } catch {}
-  }, [user.personality, voiceProfile, speakText]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: callVoiceAI is stable
+  }, [speakText, callVoiceAI]);
 
   const stopListening = () => {
     recognitionRef.current?.abort();
@@ -419,6 +474,14 @@ export default function LoveCallModal() {
             <div className="flex items-center justify-center gap-2 text-white mb-3 text-sm font-semibold">
               <Phone className="w-4 h-4" />
               <span>Voice Call</span>
+              {!openaiKey && !claudeKey && (
+                <div className="mx-4 mb-2 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-center">
+                  <p className="text-white/70 text-xs">
+                    💡 Add an OpenAI or Claude API key for smarter voice
+                    responses
+                  </p>
+                </div>
+              )}
               {isThinking && (
                 <span className="flex items-center gap-1 text-xs bg-white/20 rounded-full px-2 py-0.5">
                   <span className="typing-dot w-1.5 h-1.5 rounded-full bg-white" />

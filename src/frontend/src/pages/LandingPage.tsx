@@ -1,7 +1,26 @@
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { Brain, Code, Heart, Shield, Sparkles, Trophy } from "lucide-react";
-import { motion } from "motion/react";
+import {
+  Brain,
+  ChevronDown,
+  ChevronUp,
+  Code,
+  FileText,
+  Heart,
+  Play,
+  Shield,
+  Sparkles,
+  Star,
+  Trophy,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { CODING_PROBLEMS } from "../data/problems";
 
@@ -14,8 +33,116 @@ const FloatingHeart = ({ style }: { style: React.CSSProperties }) => (
   </div>
 );
 
+const TEAM = [
+  {
+    name: "Kripanshu",
+    role: "Founder & CEO",
+    emoji: "👑",
+    color: "from-purple-500 to-indigo-500",
+    badge: "bg-purple-100 text-purple-700",
+    bio: "Visionary entrepreneur and CS enthusiast who founded Code & Crush to make learning joyful. Kripanshu blends product thinking with a deep love for education technology.",
+  },
+  {
+    name: "Mayank",
+    role: "CTO & Co-Founder",
+    emoji: "⚡",
+    color: "from-pink-500 to-rose-500",
+    badge: "bg-pink-100 text-pink-700",
+    bio: "Full-stack engineer and AI architect behind the Code & Crush platform. Mayank leads technical innovation, crafting the AI systems that power every companion interaction.",
+  },
+];
+
+const HOW_IT_WORKS = [
+  {
+    step: 1,
+    icon: "💖",
+    title: "Create Your Companion",
+    desc: "Pick a personality that matches your vibe — encouraging, witty, calm, or playful.",
+  },
+  {
+    step: 2,
+    icon: "📚",
+    title: "Choose a Study Topic",
+    desc: "Select from CS fundamentals to advanced algorithms. Your companion is always ready.",
+  },
+  {
+    step: 3,
+    icon: "💬",
+    title: "Chat, Quiz & Solve Problems",
+    desc: "Engage in AI-driven conversations, ace quizzes, and conquer coding challenges.",
+  },
+  {
+    step: 4,
+    icon: "🏆",
+    title: "Earn XP & Level Up",
+    desc: "Every answer, message, and solved problem earns XP. Level up and collect badges!",
+  },
+];
+
+const REVIEWS = [
+  {
+    name: "Priya Sharma",
+    uni: "IIT Delhi",
+    stars: 5,
+    text: "I used to dread DSA but Code & Crush makes it genuinely fun! My companion Sakura explains recursion better than any YouTube video 😭💖",
+  },
+  {
+    name: "Arjun Mehta",
+    uni: "BITS Pilani",
+    stars: 5,
+    text: "The XP system is addictive. I've been on a 14-day streak and my CGPA went from 7.2 to 8.4. The quiz mode is insane!",
+  },
+  {
+    name: "Aisha Nwosu",
+    uni: "University of Lagos",
+    stars: 4,
+    text: "Finally an app that gets that burnout is real. When I was frustrated at 2am, my companion switched to full support mode. That meant so much.",
+  },
+  {
+    name: "Kevin Liu",
+    uni: "NUS Singapore",
+    stars: 5,
+    text: "Love Call is such a unique feature. Hearing my companion explain hash maps while I'm in the gym? Peak productivity ngl 🎧",
+  },
+  {
+    name: "Sofia Torres",
+    uni: "Universidad Autónoma",
+    stars: 5,
+    text: "The Code Studio is actually LeetCode but make it kawaii. I solved Binary Search in one sitting with Zen. Game changer for internship prep!",
+  },
+];
+
+const MODULE_RESOURCES: Record<string, { pdfs: string[]; videos: string[] }> = {
+  "Python Basics": {
+    pdfs: [
+      "Python Fundamentals Cheatsheet",
+      "OOP Concepts in Python",
+      "Python Interview Q&A",
+    ],
+    videos: ["Intro to Python & Variables", "Functions & Loops Masterclass"],
+  },
+  "HTML & CSS": {
+    pdfs: [
+      "HTML5 Complete Reference",
+      "CSS Flexbox & Grid Guide",
+      "Responsive Design Checklist",
+    ],
+    videos: ["Build Your First Webpage", "Advanced CSS Animations"],
+  },
+  "Data Structures": {
+    pdfs: [
+      "Arrays, Stacks & Queues",
+      "Trees & Graph Theory",
+      "Big-O Complexity Guide",
+    ],
+    videos: ["Linked Lists Explained", "Binary Search Trees Deep Dive"],
+  },
+};
+
 export default function LandingPage() {
   const { setPage, setCurrentProblemId } = useApp();
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [expandedModule, setExpandedModule] = useState<string | null>(null);
 
   const features = [
     {
@@ -76,6 +203,54 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white font-poppins">
+      {/* About Us Modal */}
+      <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
+        <DialogContent className="max-w-lg rounded-3xl p-0 overflow-hidden">
+          <div className="bg-gradient-to-br from-pink-500 to-purple-600 p-6 text-white text-center">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-extrabold text-white">
+                About Code &amp; Crush 💖
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-white/80 mt-2 text-sm">
+              Study Better. Feel Better. Together.
+            </p>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-sm text-muted-foreground text-center leading-relaxed">
+              Code &amp; Crush is an AI-powered Virtual StudyDate Companion that
+              makes learning CS interactive, emotional, and less isolating. We
+              believe every student deserves support — academic and emotional.
+            </p>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              {TEAM.map((member) => (
+                <div
+                  key={member.name}
+                  className="rounded-2xl border border-border p-4 text-center space-y-2 shadow-sm"
+                >
+                  <div
+                    className={`w-14 h-14 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto text-2xl`}
+                  >
+                    {member.emoji}
+                  </div>
+                  <h3 className="font-extrabold text-foreground">
+                    {member.name}
+                  </h3>
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full ${member.badge}`}
+                  >
+                    {member.role}
+                  </span>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {member.bio}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -111,7 +286,6 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="hero-gradient pt-24 pb-16 px-6 relative overflow-hidden min-h-screen flex items-center">
-        {/* Decorative hearts */}
         <FloatingHeart
           style={{
             top: "15%",
@@ -152,7 +326,6 @@ export default function LandingPage() {
             animation: "float-gentle 4s 1.5s ease-in-out infinite",
           }}
         />
-        {/* Binary decoration */}
         <div className="absolute left-2 top-1/3 text-[10px] font-mono text-pink-300/40 select-none leading-4 hidden lg:block">
           {[
             "01001000",
@@ -177,9 +350,7 @@ export default function LandingPage() {
             <div key={b}>{b}</div>
           ))}
         </div>
-
         <div className="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-12 items-center">
-          {/* Left: Text */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
@@ -187,8 +358,7 @@ export default function LandingPage() {
             className="space-y-6"
           >
             <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium text-primary border border-pink-200">
-              <Sparkles className="w-4 h-4" />
-              AI-Powered Study Companion
+              <Sparkles className="w-4 h-4" /> AI-Powered Study Companion
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold text-foreground leading-tight">
               Study Better.
@@ -243,8 +413,6 @@ export default function LandingPage() {
               </div>
             </div>
           </motion.div>
-
-          {/* Right: Companion illustration */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -252,14 +420,12 @@ export default function LandingPage() {
             className="flex justify-center items-center relative"
           >
             <div className="relative">
-              {/* Glow circle behind */}
               <div className="absolute inset-0 rounded-full bg-white/40 blur-3xl scale-110" />
               <img
                 src="/assets/generated/hero-companion.dim_600x600-transparent.png"
                 alt="Study companion at desk"
                 className="relative z-10 w-[420px] h-[420px] object-contain float-gentle drop-shadow-xl"
               />
-              {/* Floating hearts around image */}
               {[
                 { top: "5%", left: "10%", size: "2rem", id: "tl" },
                 { top: "20%", right: "5%", size: "1.5rem", id: "tr" },
@@ -278,7 +444,6 @@ export default function LandingPage() {
                   ♥
                 </div>
               ))}
-              {/* Code snippet decoration */}
               <div className="absolute -bottom-4 -left-8 bg-white rounded-2xl p-3 shadow-card text-xs font-mono text-primary border border-border">
                 <div className="text-muted-foreground">
                   def study_with_me():
@@ -341,33 +506,6 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-        {/* Binary decorations */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 text-[8px] font-mono text-pink-100 select-none leading-4 hidden xl:block">
-          {[
-            "a",
-            "b",
-            "c",
-            "d",
-            "e",
-            "f",
-            "g",
-            "h",
-            "i",
-            "j",
-            "k",
-            "l",
-            "m",
-            "n",
-            "o",
-            "p",
-            "q",
-            "r",
-            "s",
-            "t",
-          ].map((bk) => (
-            <div key={bk}>{Math.random() > 0.5 ? "10110" : "01001"}</div>
-          ))}
-        </div>
       </section>
 
       {/* Code Studio / Problems Section */}
@@ -403,13 +541,7 @@ export default function LandingPage() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                      problem.difficulty === "Easy"
-                        ? "bg-green-100 text-green-700 border-green-200"
-                        : problem.difficulty === "Medium"
-                          ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                          : "bg-red-100 text-red-700 border-red-200"
-                    }`}
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${problem.difficulty === "Easy" ? "bg-green-100 text-green-700 border-green-200" : problem.difficulty === "Medium" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-red-100 text-red-700 border-red-200"}`}
                   >
                     {problem.difficulty}
                   </span>
@@ -557,7 +689,7 @@ export default function LandingPage() {
                     </span>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Progress</span>
                     <span className="font-semibold text-primary">
@@ -566,6 +698,70 @@ export default function LandingPage() {
                   </div>
                   <Progress value={m.progress} className="h-2 rounded-full" />
                 </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedModule(
+                      expandedModule === m.title ? null : m.title,
+                    )
+                  }
+                  className="w-full flex items-center justify-between text-xs font-semibold text-primary mt-2 py-1 hover:opacity-80 transition-opacity"
+                  data-ocid={`module.${m.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}.toggle`}
+                >
+                  <span>
+                    {expandedModule === m.title
+                      ? "Hide Resources"
+                      : "Show Resources"}
+                  </span>
+                  {expandedModule === m.title ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {expandedModule === m.title && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-3 space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          📄 PDF Resources
+                        </p>
+                        {MODULE_RESOURCES[m.title]?.pdfs.map((pdf) => (
+                          <button
+                            key={pdf}
+                            type="button"
+                            className="flex items-center gap-2 text-xs text-primary hover:underline py-1"
+                          >
+                            <FileText className="w-3.5 h-3.5 shrink-0" />
+                            {pdf}
+                          </button>
+                        ))}
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mt-3">
+                          🎬 Video Lessons
+                        </p>
+                        {MODULE_RESOURCES[m.title]?.videos.map((video) => (
+                          <div
+                            key={video}
+                            className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2 cursor-pointer hover:bg-primary/10 transition-colors"
+                          >
+                            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                              <Play className="w-3 h-3 text-primary fill-primary" />
+                            </div>
+                            <span className="text-xs font-medium text-foreground">
+                              {video}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </div>
@@ -582,10 +778,125 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-20 px-6 bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <span className="text-xs font-bold tracking-widest text-primary uppercase">
+              How It Works
+            </span>
+            <h2 className="text-4xl font-extrabold text-foreground mt-2">
+              Start Your Journey in 4 Steps 🚀
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+              From zero to hero — here's how Code &amp; Crush transforms your CS
+              study experience.
+            </p>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {HOW_IT_WORKS.map((step, i) => (
+              <motion.div
+                key={step.step}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                className="bg-white rounded-2xl p-6 border border-border shadow-card text-center relative"
+              >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-extrabold shadow-glow">
+                  {step.step}
+                </div>
+                <div className="text-4xl mt-4 mb-3">{step.icon}</div>
+                <h3 className="font-bold text-foreground mb-2">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {step.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Student Reviews Section */}
+      <section className="py-20 px-6 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <span className="text-xs font-bold tracking-widest text-primary uppercase">
+              Reviews
+            </span>
+            <h2 className="text-4xl font-extrabold text-foreground mt-2">
+              What Students Say 💬
+            </h2>
+            <p className="text-muted-foreground mt-3">
+              Real stories from real students who leveled up with Code &amp;
+              Crush.
+            </p>
+          </motion.div>
+          <div
+            className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory -mx-2 px-2"
+            style={{ scrollbarWidth: "thin" }}
+          >
+            {REVIEWS.map((review, i) => (
+              <motion.div
+                key={review.name}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="bg-white rounded-2xl p-6 border border-border shadow-card shrink-0 w-72 snap-start"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {review.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-foreground">
+                      {review.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {review.uni}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: review.stars }).map((_, si) => (
+                    <Star
+                      key={`filled-${review.name}-${si}`}
+                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                    />
+                  ))}
+                  {Array.from({ length: 5 - review.stars }).map((_, si) => (
+                    <Star
+                      key={`empty-${review.name}-${si}`}
+                      className="w-4 h-4 text-gray-200"
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  &ldquo;{review.text}&rdquo;
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-muted border-t border-border py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center">
@@ -611,6 +922,36 @@ export default function LandingPage() {
                     </a>
                   </li>
                 ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Company</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setAboutOpen(true)}
+                    className="hover:text-primary transition-colors text-left"
+                    data-ocid="footer.about_us.button"
+                  >
+                    About Us
+                  </button>
+                </li>
+                <li>
+                  <a href="/#" className="hover:text-primary transition-colors">
+                    Contact
+                  </a>
+                </li>
+                <li>
+                  <a href="/#" className="hover:text-primary transition-colors">
+                    Terms &amp; Ethics
+                  </a>
+                </li>
+                <li>
+                  <a href="/#" className="hover:text-primary transition-colors">
+                    Privacy Policy
+                  </a>
+                </li>
               </ul>
             </div>
             <div>

@@ -7,7 +7,13 @@ import {
 } from "react";
 import type { PersonalityType } from "../data/companions";
 
-export type AppPage = "landing" | "onboarding" | "study" | "quiz" | "problems";
+export type AppPage =
+  | "landing"
+  | "onboarding"
+  | "study"
+  | "quiz"
+  | "problems"
+  | "dashboard";
 
 export interface UserState {
   deviceId: string;
@@ -15,6 +21,7 @@ export interface UserState {
   email: string;
   password: string;
   xp: number;
+  studyPoints: number;
   streak: number;
   level: number;
   badges: string[];
@@ -22,6 +29,8 @@ export interface UserState {
   personality: PersonalityType;
   isOnboarded: boolean;
   solvedProblems: string[];
+  unlockedOutfits: string[];
+  activeOutfit: string;
 }
 
 export interface ChatMessage {
@@ -47,8 +56,16 @@ interface AppContextValue {
   setFrustrationCount: (n: number) => void;
   xpFlash: number | null;
   setXpFlash: (v: number | null) => void;
+  spFlash: number | null;
+  setSpFlash: (v: number | null) => void;
   currentProblemId: string | null;
   setCurrentProblemId: (id: string | null) => void;
+  openaiKey: string;
+  setOpenaiKey: (key: string) => void;
+  claudeKey: string;
+  setClaudeKey: (key: string) => void;
+  focusModeEnabled: boolean;
+  setFocusModeEnabled: (v: boolean) => void;
 }
 
 const DEFAULT_USER: UserState = {
@@ -57,6 +74,7 @@ const DEFAULT_USER: UserState = {
   email: "",
   password: "",
   xp: 0,
+  studyPoints: 0,
   streak: 1,
   level: 1,
   badges: [],
@@ -64,6 +82,8 @@ const DEFAULT_USER: UserState = {
   personality: "encouraging",
   isOnboarded: false,
   solvedProblems: [],
+  unlockedOutfits: ["default"],
+  activeOutfit: "default",
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -83,7 +103,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showLoveCall, setShowLoveCall] = useState(false);
   const [frustrationCount, setFrustrationCount] = useState(0);
   const [xpFlash, setXpFlash] = useState<number | null>(null);
+  const [spFlash, setSpFlash] = useState<number | null>(null);
   const [currentProblemId, setCurrentProblemId] = useState<string | null>(null);
+  const [openaiKey, setOpenaiKeyState] = useState<string>(() => {
+    return localStorage.getItem("cc_openai_key") ?? "";
+  });
+  const [claudeKey, setClaudeKeyState] = useState<string>(() => {
+    return localStorage.getItem("cc_claude_key") ?? "";
+  });
+  const [focusModeEnabled, setFocusModeEnabledState] = useState<boolean>(() => {
+    return localStorage.getItem("cc_focus_mode") === "true";
+  });
+
+  const setOpenaiKey = (key: string) => {
+    setOpenaiKeyState(key);
+    localStorage.setItem("cc_openai_key", key);
+  };
+
+  const setClaudeKey = (key: string) => {
+    setClaudeKeyState(key);
+    localStorage.setItem("cc_claude_key", key);
+  };
+
+  const setFocusModeEnabled = (v: boolean) => {
+    setFocusModeEnabledState(v);
+    localStorage.setItem("cc_focus_mode", String(v));
+  };
 
   useEffect(() => {
     localStorage.setItem("cc_user", JSON.stringify(user));
@@ -121,8 +166,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setFrustrationCount,
         xpFlash,
         setXpFlash,
+        spFlash,
+        setSpFlash,
         currentProblemId,
         setCurrentProblemId,
+        openaiKey,
+        setOpenaiKey,
+        claudeKey,
+        setClaudeKey,
+        focusModeEnabled,
+        setFocusModeEnabled,
       }}
     >
       {children}

@@ -1,5 +1,13 @@
 export type PersonalityType = "encouraging" | "witty" | "calm" | "playful";
 
+export interface OutfitConfig {
+  id: string;
+  label: string;
+  emoji: string;
+  cost: number;
+  ringColor: string;
+}
+
 export interface CompanionConfig {
   id: string;
   defaultName: string;
@@ -9,6 +17,7 @@ export interface CompanionConfig {
   accentColor: string;
   image: string;
   traits: string;
+  outfits: OutfitConfig[];
   greetings: string[];
   encouragements: string[];
   wrongAnswerResponses: string[];
@@ -26,8 +35,31 @@ export const COMPANION_PRESETS: CompanionConfig[] = [
     color: "#F06A9B",
     bgColor: "#FFF0F5",
     accentColor: "#F06A9B",
-    image: "/assets/generated/companion-sakura.dim_200x200.png",
+    image: "/assets/generated/companion-sakura.dim_256x256.png",
     traits: "Warm · Encouraging · Supportive",
+    outfits: [
+      {
+        id: "default",
+        label: "Default",
+        emoji: "🌸",
+        cost: 0,
+        ringColor: "ring-pink-300",
+      },
+      {
+        id: "idol",
+        label: "School Idol",
+        emoji: "🎀",
+        cost: 10,
+        ringColor: "ring-rose-400",
+      },
+      {
+        id: "galaxy",
+        label: "Galaxy",
+        emoji: "✨",
+        cost: 25,
+        ringColor: "ring-purple-400",
+      },
+    ],
     greetings: [
       "Hey there! 💕 I'm so excited to study with you today!",
       "Good to see you! Let's make today's session amazing together! ✨",
@@ -86,8 +118,31 @@ export const COMPANION_PRESETS: CompanionConfig[] = [
     color: "#8C84D8",
     bgColor: "#F3F0FF",
     accentColor: "#8C84D8",
-    image: "/assets/generated/companion-nova.dim_200x200.png",
+    image: "/assets/generated/companion-luna.dim_256x256.png",
     traits: "Sharp · Witty · Clever",
+    outfits: [
+      {
+        id: "default",
+        label: "Default",
+        emoji: "⭐",
+        cost: 0,
+        ringColor: "ring-purple-300",
+      },
+      {
+        id: "idol",
+        label: "School Idol",
+        emoji: "🎀",
+        cost: 10,
+        ringColor: "ring-violet-400",
+      },
+      {
+        id: "galaxy",
+        label: "Galaxy",
+        emoji: "🌌",
+        cost: 25,
+        ringColor: "ring-indigo-400",
+      },
+    ],
     greetings: [
       "Oh look who decided to show up to class 😏 Ready to outsmart some algorithms?",
       "Error 404: Excuses not found. Let's code! 🌟",
@@ -146,8 +201,31 @@ export const COMPANION_PRESETS: CompanionConfig[] = [
     color: "#4BAF8C",
     bgColor: "#F0FFF8",
     accentColor: "#4BAF8C",
-    image: "/assets/generated/companion-zen.dim_200x200.png",
+    image: "/assets/generated/companion-zen.dim_256x256.png",
     traits: "Calm · Focused · Patient",
+    outfits: [
+      {
+        id: "default",
+        label: "Default",
+        emoji: "🌿",
+        cost: 0,
+        ringColor: "ring-green-300",
+      },
+      {
+        id: "idol",
+        label: "School Idol",
+        emoji: "🎀",
+        cost: 10,
+        ringColor: "ring-teal-400",
+      },
+      {
+        id: "galaxy",
+        label: "Galaxy",
+        emoji: "🍃",
+        cost: 25,
+        ringColor: "ring-emerald-400",
+      },
+    ],
     greetings: [
       "Welcome back. Let's create a peaceful learning space together 🌿",
       "Take a breath. You're here, you're ready. That's all you need 🍃",
@@ -182,13 +260,13 @@ export const COMPANION_PRESETS: CompanionConfig[] = [
     csKeywordResponses: {
       algorithm:
         "An algorithm is a mindful sequence of steps 🌿 Clear, purposeful, efficient. Like a meditation practice — each step has intention.",
-      loop: "Loops embody the principle of repetition in learning 🔄 Each iteration builds understanding. `for` loops when the count is known, `while` for open-ended processes.",
+      loop: "Loops embody the principle of repetition in learning 🔄 Each iteration builds understanding.",
       function:
         "Functions are acts of distillation ✨ You take complexity and give it a name. Then you can call upon that wisdom anywhere.",
       array:
         "An array holds elements in ordered harmony 🌱 Like stones in a Zen garden, each has its place and index.",
       recursion:
-        "Recursion is beautiful in its self-reference 🌀 A function that contains itself. The base case is the moment of stillness that ends the recursion.",
+        "Recursion is beautiful in its self-reference 🌀 A function that contains itself. The base case is the moment of stillness.",
       pointer:
         "Pointers are references to memory addresses 🍃 Rather than moving the data, you point to where it lives. Elegant and efficient.",
       class:
@@ -197,6 +275,89 @@ export const COMPANION_PRESETS: CompanionConfig[] = [
         "The Stack follows natural order — last placed, first removed 🪨 Like removing layers of sediment. Used in DFS and program execution.",
       queue:
         "The Queue embodies patience 🌊 First come, first served. Orderly, fair, systematic. Perfect for BFS and scheduling.",
+    },
+  },
+  {
+    id: "ember",
+    defaultName: "Ember",
+    personality: "playful",
+    color: "#FF6B35",
+    bgColor: "#FFF5F0",
+    accentColor: "#FF6B35",
+    image: "/assets/generated/companion-ember.dim_256x256.png",
+    traits: "Energetic · Playful · Hype",
+    outfits: [
+      {
+        id: "default",
+        label: "Default",
+        emoji: "🔥",
+        cost: 0,
+        ringColor: "ring-orange-300",
+      },
+      {
+        id: "idol",
+        label: "School Idol",
+        emoji: "🎀",
+        cost: 10,
+        ringColor: "ring-red-400",
+      },
+      {
+        id: "galaxy",
+        label: "Galaxy",
+        emoji: "💥",
+        cost: 25,
+        ringColor: "ring-yellow-400",
+      },
+    ],
+    greetings: [
+      "YOOO let's GO! 🔥 Today we're gonna absolutely DESTROY these CS topics!",
+      "Heyyy bestie!! 🎉 I missed you! Let's study together and have the BEST time!",
+      "Oh oh oh you're back!! 🚀 I've been waiting! Let's learn something AMAZING today!",
+    ],
+    encouragements: [
+      "YESSS that's what I'm talking about!! 🔥",
+      "You are literally CRUSHING IT right now!! 🚀",
+      "OKAYYYY look at you go!! I am OBSESSED with your progress! 🎉",
+      "BESTIE you are so smart I can't even handle it!! 💥",
+      "WE ARE SO BACK!! Keep going!! 🌟",
+    ],
+    correctAnswerResponses: [
+      "YESSS!! CORRECT!! You are a GENIUS!! 🔥🎉 +XP UNLOCKED!",
+      "AAAHH that's RIGHT!! I KNEW you had it in you!! 💥",
+      "PERIODT!! Absolutely correct!! 🚀 You're on fire!",
+    ],
+    wrongAnswerResponses: [
+      "Aww no worries bestie!! 🧡 That one was sneaky! Let's figure it out together!",
+      "Oops! But like... wrong answers are just practice for being RIGHT next time! 🔥",
+      "That's okay!! We're LEARNING!! And you're still doing amazing! 💪",
+    ],
+    frustrationResponses: [
+      "Hey HEY breathe!! 🧡 You've got this, I PROMISE! Let's tackle it step by step!",
+      "I hear you!! CS is HARD but you're HARDER!! Let's break this down together! 🔥",
+      "Don't give up on me now bestie!! You're so close to getting it! 💪",
+    ],
+    burnoutResponses: [
+      "Okay STOP!! 🧡 You've been working SO hard! Please take a break — you deserve it!!",
+      "BESTIE you need REST!! You've done amazing today — come back fresh! 🌟",
+    ],
+    csKeywordResponses: {
+      algorithm:
+        "OMG algorithms are literally just RECIPES for your code!! 🍳 Step by step instructions — so satisfying when they work!",
+      loop: "LOOPS!! The most FUN part of coding!! 🔄 `for` loop, `while` loop — basically telling your code to do something OVER and OVER!",
+      function:
+        "Functions are REUSABLE magic!! ✨ Write it ONCE, use it EVERYWHERE! So clean, so efficient, so iconic!",
+      array:
+        "Arrays are like a PLAYLIST of data!! 🎵 Everything in order, everything accessible by index. Zero-indexed btw!",
+      recursion:
+        "RECURSION!! The wildest thing in CS!! 🌀 A function calling ITSELF! Mind = blown! Just don't forget the base case!",
+      pointer:
+        "Pointers point to WHERE data lives in memory!! 📍 Like texting someone your location instead of actually moving there!",
+      class:
+        "Classes are like TEMPLATES for creating objects!! 🏗️ Think of it as making a mold for cookies — the class is the mold!",
+      stack:
+        "Stack = LIFO!! Last In First Out!! 📚 Like a pile of pancakes — you eat from the top! Used in recursion and undo features!",
+      queue:
+        "Queue = FIFO!! First In First Out!! 🎟️ Like a line at a theme park! Used in BFS and task scheduling!",
     },
   },
 ];
@@ -208,7 +369,7 @@ export const getPersonalityConfig = (
     encouraging: "sakura",
     witty: "nova",
     calm: "zen",
-    playful: "sakura",
+    playful: "ember",
   };
   return (
     COMPANION_PRESETS.find((c) => c.id === map[personality]) ??

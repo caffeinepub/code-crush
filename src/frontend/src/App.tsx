@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoveCallModal from "./components/LoveCallModal";
 import { AppProvider, useApp } from "./context/AppContext";
+import DashboardPage from "./pages/DashboardPage";
 import LandingPage from "./pages/LandingPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import ProblemsPage from "./pages/ProblemsPage";
@@ -24,6 +25,7 @@ function AppRouter() {
       {page === "study" && <StudyApp />}
       {page === "quiz" && <QuizMode />}
       {page === "problems" && <ProblemsPage />}
+      {page === "dashboard" && <DashboardPage />}
       <LoveCallModal />
       <Toaster />
     </>

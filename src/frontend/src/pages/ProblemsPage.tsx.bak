@@ -184,7 +184,7 @@ function ProblemCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-2xl p-5 border border-border shadow-sm hover:shadow-md transition-shadow"
+      className="bg-white rounded-2xl p-5 border border-border shadow-sm hover:shadow-md transition-shadow"
     >
       <div className="flex items-center justify-between mb-3">
         <span
@@ -298,18 +298,6 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
   };
 
   const handleGetHint = () => {
-    if (!problem) return;
-    // If no API key, show hint directly without calling AI
-    if (!claudeKey && !openaiKey) {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "companion",
-          text: `💡 **Hint:** ${problem.hint || "Think about breaking the problem into smaller steps."}`,
-        },
-      ]);
-      return;
-    }
     setChatMessages((prev) => [
       ...prev,
       { role: "user", text: "Can I get a hint? 🤔" },
@@ -322,21 +310,13 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
       problemHint: problem.hint,
       openaiKey,
       claudeKey,
-    })
-      .then((resp) => {
-        setIsTyping(false);
-        setChatMessages((prev) => [
-          ...prev,
-          { role: "companion", text: resp || `💡 Hint: ${problem.hint}` },
-        ]);
-      })
-      .catch(() => {
-        setIsTyping(false);
-        setChatMessages((prev) => [
-          ...prev,
-          { role: "companion", text: `💡 Hint: ${problem.hint}` },
-        ]);
-      });
+    }).then((resp) => {
+      setIsTyping(false);
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "companion", text: resp || `💡 Hint: ${problem.hint}` },
+      ]);
+    });
   };
 
   const handleSendChat = useCallback(() => {
@@ -374,7 +354,7 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
   return (
     <div className="h-screen bg-[#fdf2f6] flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
+      <header className="bg-white border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full overflow-hidden">
             <img
@@ -405,7 +385,7 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
           {/* Problem Statement */}
-          <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+          <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-xl font-extrabold text-foreground">
                 {problem.title}
@@ -520,7 +500,7 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
           </AnimatePresence>
 
           {/* Relationship Progress */}
-          <div className="bg-card rounded-2xl p-4 border border-border shadow-sm">
+          <div className="bg-white rounded-2xl p-4 border border-border shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">
                 Relationship Progress
@@ -537,7 +517,7 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
           </div>
 
           {/* Companion Chat */}
-          <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full overflow-hidden">
@@ -634,7 +614,7 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
 }
 
 export default function ProblemsPage() {
-  const { currentProblemId, setCurrentProblemId, setPage } = useApp();
+  const { currentProblemId, setCurrentProblemId } = useApp();
 
   const currentProblem = currentProblemId
     ? CODING_PROBLEMS.find((p) => p.id === currentProblemId)
@@ -647,7 +627,7 @@ export default function ProblemsPage() {
   return (
     <div className="h-screen bg-[#fdf2f6] flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3">
+      <header className="bg-white border-b border-border px-4 py-3 flex items-center gap-3">
         <span className="font-bold text-foreground">Code Studio 💻</span>
       </header>
 
@@ -662,27 +642,6 @@ export default function ProblemsPage() {
               Practice real coding problems with your companion by your side
             </p>
           </div>
-
-          {/* Code Visualizer Banner */}
-          <button
-            type="button"
-            onClick={() => setPage("code-visualizer" as any)}
-            className="w-full mb-6 bg-gradient-to-r from-violet-500 to-pink-500 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
-          >
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
-              🔍
-            </div>
-            <div className="flex-1">
-              <div className="text-white font-extrabold text-base">
-                Code Visualizer
-              </div>
-              <div className="text-white/80 text-xs mt-0.5">
-                Upload or paste code — see it animate step by step with
-                variables, arrays & speed control
-              </div>
-            </div>
-            <div className="text-white/60 text-lg">›</div>
-          </button>
 
           {/* Problem grid */}
           <div className="grid sm:grid-cols-2 gap-4 mb-10">
@@ -704,7 +663,7 @@ export default function ProblemsPage() {
               {ACHIEVEMENTS.map((ach) => (
                 <div
                   key={ach.name}
-                  className="bg-card rounded-2xl p-4 border border-border text-center opacity-60"
+                  className="bg-white rounded-2xl p-4 border border-border text-center opacity-60"
                 >
                   <div className="text-2xl mb-1">{ach.icon}</div>
                   <div className="text-xs font-bold text-foreground">

@@ -163,3 +163,89 @@
   backdrop-filter: blur(12px);
   border: 1px solid oklch(0.35 0.05 265 / 0.4);
 }
+
+/* ===== App Themes ===== */
+[data-theme="romantic"] {
+  --background: 0.96 0.02 350;
+  --foreground: 0.15 0.04 350;
+  --card: 0.99 0.01 350;
+  --card-foreground: 0.15 0.04 350;
+  --primary: 0.6 0.22 350;
+  --primary-foreground: 0.98 0 0;
+  --secondary: 0.75 0.15 320;
+  --secondary-foreground: 0.15 0.04 350;
+  --muted: 0.92 0.03 350;
+  --muted-foreground: 0.5 0.05 350;
+  --border: 0.85 0.06 350;
+  --accent: 0.88 0.08 340;
+  --accent-foreground: 0.2 0.06 350;
+  --input: 0.9 0.04 350;
+}
+
+[data-theme="chill"] {
+  --background: 0.96 0.02 200;
+  --foreground: 0.12 0.04 210;
+  --card: 0.99 0.01 200;
+  --card-foreground: 0.12 0.04 210;
+  --primary: 0.55 0.18 210;
+  --primary-foreground: 0.98 0 0;
+  --secondary: 0.7 0.12 180;
+  --secondary-foreground: 0.12 0.04 210;
+  --muted: 0.9 0.03 200;
+  --muted-foreground: 0.48 0.05 210;
+  --border: 0.82 0.06 200;
+  --accent: 0.85 0.07 190;
+  --accent-foreground: 0.18 0.05 210;
+  --input: 0.88 0.04 200;
+}
+
+[data-theme="motivation"] {
+  --background: 0.97 0.02 40;
+  --foreground: 0.12 0.04 30;
+  --card: 0.99 0.01 40;
+  --card-foreground: 0.12 0.04 30;
+  --primary: 0.65 0.22 35;
+  --primary-foreground: 0.98 0 0;
+  --secondary: 0.75 0.18 55;
+  --secondary-foreground: 0.12 0.04 30;
+  --muted: 0.92 0.03 40;
+  --muted-foreground: 0.5 0.05 35;
+  --border: 0.85 0.07 40;
+  --accent: 0.88 0.09 45;
+  --accent-foreground: 0.18 0.05 30;
+  --input: 0.9 0.04 40;
+}
+
+[data-theme="focus"] {
+  --background: 0.96 0.02 270;
+  --foreground: 0.12 0.05 270;
+  --card: 0.99 0.01 270;
+  --card-foreground: 0.12 0.05 270;
+  --primary: 0.55 0.22 270;
+  --primary-foreground: 0.98 0 0;
+  --secondary: 0.68 0.15 285;
+  --secondary-foreground: 0.12 0.05 270;
+  --muted: 0.91 0.03 270;
+  --muted-foreground: 0.48 0.06 270;
+  --border: 0.83 0.07 270;
+  --accent: 0.86 0.09 275;
+  --accent-foreground: 0.18 0.06 270;
+  --input: 0.88 0.04 270;
+}
+
+[data-theme="night"] {
+  --background: 0.08 0.04 260;
+  --foreground: 0.95 0.01 260;
+  --card: 0.13 0.04 260;
+  --card-foreground: 0.95 0.01 260;
+  --primary: 0.65 0.2 265;
+  --primary-foreground: 0.98 0 0;
+  --secondary: 0.55 0.14 285;
+  --secondary-foreground: 0.95 0.01 260;
+  --muted: 0.2 0.03 260;
+  --muted-foreground: 0.58 0.03 260;
+  --border: 0.25 0.04 260;
+  --accent: 0.22 0.05 265;
+  --accent-foreground: 0.82 0.08 265;
+  --input: 0.22 0.035 260;
+}

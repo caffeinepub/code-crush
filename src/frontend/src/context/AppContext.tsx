@@ -12,7 +12,17 @@ export type AppPage =
   | "onboarding"
   | "study"
   | "problems"
-  | "dashboard";
+  | "dashboard"
+  | "events"
+  | "code-visualizer";
+
+export type AppTheme =
+  | "default"
+  | "romantic"
+  | "chill"
+  | "motivation"
+  | "focus"
+  | "night";
 
 export interface UserState {
   deviceId: string;
@@ -67,6 +77,8 @@ interface AppContextValue {
   setClaudeKey: (key: string) => void;
   focusModeEnabled: boolean;
   setFocusModeEnabled: (v: boolean) => void;
+  appTheme: AppTheme;
+  setAppTheme: (t: AppTheme) => void;
 }
 
 const DEFAULT_USER: UserState = {
@@ -117,6 +129,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [focusModeEnabled, setFocusModeEnabledState] = useState<boolean>(() => {
     return localStorage.getItem("cc_focus_mode") === "true";
   });
+  const [appTheme, setAppThemeState] = useState<AppTheme>(() => {
+    return (localStorage.getItem("cc_theme") as AppTheme) ?? "default";
+  });
 
   const setOpenaiKey = (key: string) => {
     setOpenaiKeyState(key);
@@ -132,6 +147,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setFocusModeEnabledState(v);
     localStorage.setItem("cc_focus_mode", String(v));
   };
+
+  const setAppTheme = (t: AppTheme) => {
+    setAppThemeState(t);
+    localStorage.setItem("cc_theme", t);
+  };
+
+  // Apply theme CSS vars to :root
+  useEffect(() => {
+    const root = document.documentElement;
+    // Remove old theme classes
+    root.removeAttribute("data-theme");
+    if (appTheme !== "default") {
+      root.setAttribute("data-theme", appTheme);
+    }
+  }, [appTheme]);
 
   useEffect(() => {
     localStorage.setItem("cc_user", JSON.stringify(user));
@@ -179,6 +209,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setClaudeKey,
         focusModeEnabled,
         setFocusModeEnabled,
+        appTheme,
+        setAppTheme,
       }}
     >
       {children}

@@ -5,12 +5,13 @@ import {
   Camera,
   CheckCircle,
   Flame,
+  Palette,
   ShoppingBag,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { useApp } from "../context/AppContext";
+import { type AppTheme, useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 
 const XP_PER_LEVEL = 100;
@@ -67,7 +68,7 @@ const DAILY_TIPS = [
 ];
 
 export default function DashboardPage() {
-  const { user, setUser, setPage } = useApp();
+  const { user, setUser, setPage, appTheme, setAppTheme } = useApp();
   const [tipIndex, setTipIndex] = useState(() =>
     Math.floor(Math.random() * DAILY_TIPS.length),
   );
@@ -112,6 +113,11 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+        <img
+          src="/assets/generated/code-crush-logo-transparent.dim_400x400.png"
+          alt="Code & Crush"
+          className="w-7 h-7 rounded-full object-cover"
+        />
         <h1 className="font-bold text-foreground">Dashboard</h1>
       </header>
 
@@ -422,6 +428,86 @@ export default function DashboardPage() {
                     </button>
                   )}
                 </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Theme Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="bg-card rounded-2xl p-5 border border-border"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Palette className="w-4 h-4 text-primary" />
+            <h3 className="font-semibold text-foreground">App Theme</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {(
+              [
+                {
+                  id: "default",
+                  label: "Default",
+                  emoji: "🎨",
+                  desc: "Classic",
+                },
+                {
+                  id: "romantic",
+                  label: "Romantic",
+                  emoji: "💖",
+                  desc: "Pink & soft",
+                },
+                {
+                  id: "chill",
+                  label: "Chill",
+                  emoji: "🌊",
+                  desc: "Blue & calm",
+                },
+                {
+                  id: "motivation",
+                  label: "Motivation",
+                  emoji: "🔥",
+                  desc: "Orange energy",
+                },
+                {
+                  id: "focus",
+                  label: "Focus",
+                  emoji: "🔮",
+                  desc: "Purple deep",
+                },
+                { id: "night", label: "Night", emoji: "🌙", desc: "Dark mode" },
+              ] as {
+                id: AppTheme;
+                label: string;
+                emoji: string;
+                desc: string;
+              }[]
+            ).map((theme) => {
+              const isActive = appTheme === theme.id;
+              return (
+                <button
+                  type="button"
+                  key={theme.id}
+                  onClick={() => setAppTheme(theme.id)}
+                  className={`rounded-xl border p-3 text-center transition-all hover:scale-105 ${
+                    isActive
+                      ? "border-primary bg-primary/15 shadow-md"
+                      : "border-border bg-muted hover:border-primary/40"
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{theme.emoji}</div>
+                  <p className="text-xs font-semibold text-foreground">
+                    {theme.label}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {theme.desc}
+                  </p>
+                  {isActive && (
+                    <div className="mt-1.5 w-2 h-2 rounded-full bg-primary mx-auto" />
+                  )}
+                </button>
               );
             })}
           </div>

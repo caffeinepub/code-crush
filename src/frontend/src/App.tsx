@@ -2,7 +2,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoveCallModal from "./components/LoveCallModal";
 import { AppProvider, useApp } from "./context/AppContext";
+import CodeVisualizationPage from "./pages/CodeVisualizationPage";
 import DashboardPage from "./pages/DashboardPage";
+import EventsPage from "./pages/EventsPage";
 import LandingPage from "./pages/LandingPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import ProblemsPage from "./pages/ProblemsPage";
@@ -24,6 +26,8 @@ function AppRouter() {
       {page === "study" && <StudyApp />}
       {page === "problems" && <ProblemsPage />}
       {page === "dashboard" && <DashboardPage />}
+      {page === "events" && <EventsPage />}
+      {page === "code-visualizer" && <CodeVisualizationPage />}
       <LoveCallModal />
       <Toaster />
     </>

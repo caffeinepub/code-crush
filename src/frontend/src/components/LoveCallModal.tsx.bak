@@ -59,20 +59,6 @@ const VOICE_PROFILES: Record<
   },
 };
 
-const getVoicesAsync = (): Promise<SpeechSynthesisVoice[]> => {
-  return new Promise((resolve) => {
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      resolve(voices);
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => {
-        resolve(window.speechSynthesis.getVoices());
-      };
-      setTimeout(() => resolve(window.speechSynthesis.getVoices()), 1000);
-    }
-  });
-};
-
 const FloatingHeart = ({
   delay,
   size,
@@ -277,7 +263,7 @@ export default function LoveCallModal() {
   };
 
   const speakText = useCallback(
-    async (text: string, onEnd?: () => void) => {
+    (text: string, onEnd?: () => void) => {
       if (muted || !window.speechSynthesis) return;
 
       window.speechSynthesis.cancel();
@@ -286,32 +272,26 @@ export default function LoveCallModal() {
       utterance.rate = voiceProfile.rate;
       utterance.volume = 1;
 
-      // Async voice loading to handle Chrome's delayed voice list
-      const voices = await getVoicesAsync();
-      const englishVoices = voices.filter((v) => v.lang.startsWith("en"));
-
-      const isFemaleName = ["sakura", "nova", "ember"].includes(preset.id);
-      let selectedVoice: SpeechSynthesisVoice | undefined;
-      if (isFemaleName) {
-        selectedVoice =
-          englishVoices.find((v) =>
-            /female|samantha|karen|victoria|zira|hazel/i.test(v.name),
+      // Try to pick a suitable voice
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const preferredVoice =
+          voices.find(
+            (v) =>
+              v.lang.startsWith("en") &&
+              (preset.gender === "male"
+                ? v.name.toLowerCase().includes("male") ||
+                  v.name.includes("Daniel") ||
+                  v.name.includes("David") ||
+                  v.name.includes("Alex")
+                : v.name.includes("Samantha") ||
+                  v.name.includes("Karen") ||
+                  v.name.includes("Victoria")),
           ) ??
-          englishVoices.find((v) =>
-            /google uk english female|google us english/i.test(v.name),
-          ) ??
-          englishVoices[0];
-      } else {
-        selectedVoice =
-          englishVoices.find((v) =>
-            /male|daniel|david|alex|mark|james/i.test(v.name),
-          ) ??
-          englishVoices.find((v) => /google uk english male/i.test(v.name)) ??
-          englishVoices[1] ??
-          englishVoices[0];
+          voices.find((v) => v.lang.startsWith("en")) ??
+          voices[0];
+        if (preferredVoice) utterance.voice = preferredVoice;
       }
-      if (selectedVoice) utterance.voice = selectedVoice;
-      else if (englishVoices[0]) utterance.voice = englishVoices[0];
 
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => {
@@ -325,7 +305,7 @@ export default function LoveCallModal() {
 
       window.speechSynthesis.speak(utterance);
     },
-    [muted, voiceProfile, preset.id],
+    [muted, voiceProfile, preset.gender],
   );
 
   const startListening = useCallback(() => {

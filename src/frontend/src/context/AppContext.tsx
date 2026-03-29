@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { DEFAULT_EQUIPPED } from "../data/clothing";
 import type { PersonalityType } from "../data/companions";
 
 export type AppPage =
@@ -24,6 +25,26 @@ export type AppTheme =
   | "focus"
   | "night";
 
+export interface WalletEntry {
+  id: string;
+  itemId: string;
+  itemLabel: string;
+  itemEmoji: string;
+  cost: number;
+  date: string;
+}
+
+export type AvatarConfig = {
+  skinTone: string;
+  hairStyle: string;
+  hairColor: string;
+  eyeShape: string;
+  eyebrowStyle: string;
+  mouthStyle: string;
+  outfitColor: string;
+  accessory: string;
+};
+
 export interface UserState {
   deviceId: string;
   username: string;
@@ -42,6 +63,10 @@ export interface UserState {
   activeOutfit: string;
   profilePhoto: string;
   companionCustomPhoto: string;
+  equippedClothing: Record<string, string>;
+  ownedClothing: string[];
+  walletHistory: WalletEntry[];
+  avatarConfig: AvatarConfig | null;
 }
 
 export interface ChatMessage {
@@ -99,6 +124,17 @@ const DEFAULT_USER: UserState = {
   activeOutfit: "default",
   profilePhoto: "",
   companionCustomPhoto: "",
+  equippedClothing: { ...DEFAULT_EQUIPPED },
+  ownedClothing: [
+    "cap-baseball",
+    "shirt-default",
+    "pant-default",
+    "shoe-default",
+    "acc-none",
+    "cap-none",
+  ],
+  walletHistory: [],
+  avatarConfig: null,
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -156,7 +192,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Apply theme CSS vars to :root
   useEffect(() => {
     const root = document.documentElement;
-    // Remove old theme classes
     root.removeAttribute("data-theme");
     if (appTheme !== "default") {
       root.setAttribute("data-theme", appTheme);

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import ProjectsSection from "../components/ProjectsSection";
 import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 import { CODING_PROBLEMS, type CodingProblem } from "../data/problems";
@@ -635,6 +636,9 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
 
 export default function ProblemsPage() {
   const { currentProblemId, setCurrentProblemId, setPage } = useApp();
+  const [activeTab, setActiveTab] = useState<"problems" | "projects">(
+    "problems",
+  );
 
   const currentProblem = currentProblemId
     ? CODING_PROBLEMS.find((p) => p.id === currentProblemId)
@@ -654,7 +658,7 @@ export default function ProblemsPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6">
           {/* Section heading */}
-          <div className="mb-6">
+          <div className="mb-5">
             <h2 className="text-2xl font-extrabold text-primary">
               💻 Code Studio
             </h2>
@@ -663,7 +667,35 @@ export default function ProblemsPage() {
             </p>
           </div>
 
-          {/* Code Visualizer Banner */}
+          {/* Tab switcher */}
+          <div className="flex gap-2 mb-6" data-ocid="problems.tab">
+            <button
+              type="button"
+              onClick={() => setActiveTab("problems")}
+              data-ocid="problems.tab"
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${
+                activeTab === "problems"
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"
+              }`}
+            >
+              🧩 Problems
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("projects")}
+              data-ocid="projects.tab"
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${
+                activeTab === "projects"
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"
+              }`}
+            >
+              🛠️ Projects
+            </button>
+          </div>
+
+          {/* Code Visualizer Banner — always visible */}
           <button
             type="button"
             onClick={() => setPage("code-visualizer" as any)}
@@ -678,45 +710,68 @@ export default function ProblemsPage() {
               </div>
               <div className="text-white/80 text-xs mt-0.5">
                 Upload or paste code — see it animate step by step with
-                variables, arrays & speed control
+                variables, arrays &amp; speed control
               </div>
             </div>
             <div className="text-white/60 text-lg">›</div>
           </button>
 
-          {/* Problem grid */}
-          <div className="grid sm:grid-cols-2 gap-4 mb-10">
-            {CODING_PROBLEMS.map((problem) => (
-              <ProblemCard
-                key={problem.id}
-                problem={problem}
-                onStart={() => setCurrentProblemId(problem.id)}
-              />
-            ))}
-          </div>
+          {/* Tab content */}
+          <AnimatePresence mode="wait">
+            {activeTab === "problems" ? (
+              <motion.div
+                key="problems"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.18 }}
+              >
+                {/* Problem grid */}
+                <div className="grid sm:grid-cols-2 gap-4 mb-10">
+                  {CODING_PROBLEMS.map((problem) => (
+                    <ProblemCard
+                      key={problem.id}
+                      problem={problem}
+                      onStart={() => setCurrentProblemId(problem.id)}
+                    />
+                  ))}
+                </div>
 
-          {/* Achievements */}
-          <div>
-            <h3 className="text-xl font-extrabold text-foreground mb-4 flex items-center gap-2">
-              🏆 Achievements
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {ACHIEVEMENTS.map((ach) => (
-                <div
-                  key={ach.name}
-                  className="bg-card rounded-2xl p-4 border border-border text-center opacity-60"
-                >
-                  <div className="text-2xl mb-1">{ach.icon}</div>
-                  <div className="text-xs font-bold text-foreground">
-                    {ach.name}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    {ach.desc}
+                {/* Achievements */}
+                <div>
+                  <h3 className="text-xl font-extrabold text-foreground mb-4 flex items-center gap-2">
+                    🏆 Achievements
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {ACHIEVEMENTS.map((ach) => (
+                      <div
+                        key={ach.name}
+                        className="bg-card rounded-2xl p-4 border border-border text-center opacity-60"
+                      >
+                        <div className="text-2xl mb-1">{ach.icon}</div>
+                        <div className="text-xs font-bold text-foreground">
+                          {ach.name}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          {ach.desc}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="projects"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.18 }}
+              >
+                <ProjectsSection />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

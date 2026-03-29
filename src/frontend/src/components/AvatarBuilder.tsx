@@ -7,6 +7,7 @@ const SKIN_OPTIONS = [
   { id: "light", color: "#FDDBB4", label: "Light" },
   { id: "medium-light", color: "#F5C89A", label: "Med Light" },
   { id: "medium", color: "#E8A87C", label: "Medium" },
+  { id: "tan", color: "#D4956A", label: "Tan" },
   { id: "medium-dark", color: "#C68642", label: "Med Dark" },
   { id: "dark", color: "#8D5524", label: "Dark" },
   { id: "very-dark", color: "#4A2912", label: "Very Dark" },
@@ -14,11 +15,12 @@ const SKIN_OPTIONS = [
 
 const HAIR_STYLES = [
   { id: "short", emoji: "💇", label: "Short" },
-  { id: "curly", emoji: "🌀", label: "Curly" },
   { id: "long", emoji: "👩", label: "Long" },
-  { id: "bun", emoji: "🎀", label: "Bun" },
-  { id: "buzz", emoji: "✂️", label: "Buzz" },
   { id: "wavy", emoji: "〰️", label: "Wavy" },
+  { id: "curly", emoji: "🌀", label: "Curly" },
+  { id: "bun", emoji: "🎀", label: "Bun" },
+  { id: "spiky", emoji: "⚡", label: "Spiky" },
+  { id: "buzz", emoji: "✂️", label: "Buzz" },
 ];
 
 const HAIR_COLORS = [
@@ -30,6 +32,7 @@ const HAIR_COLORS = [
   { id: "white", color: "#DDDDDD", label: "White" },
   { id: "blue", color: "#4A90D9", label: "Blue" },
   { id: "purple", color: "#8E44AD", label: "Purple" },
+  { id: "pink", color: "#FF69B4", label: "Pink" },
 ];
 
 const EYE_SHAPES = [
@@ -37,6 +40,7 @@ const EYE_SHAPES = [
   { id: "almond", label: "Almond", icon: "◉" },
   { id: "wide", label: "Wide", icon: "◎" },
   { id: "sleepy", label: "Sleepy", icon: "—" },
+  { id: "sparkle", label: "Sparkle", icon: "✨" },
 ];
 
 const EYEBROW_STYLES = [
@@ -68,6 +72,7 @@ const ACCESSORIES = [
   { id: "glasses", label: "Glasses", icon: "👓" },
   { id: "sunglasses", label: "Sunnies", icon: "🕶️" },
   { id: "earrings", label: "Earrings", icon: "💎" },
+  { id: "headband", label: "Headband", icon: "🎀" },
 ];
 
 interface AvatarBuilderProps {

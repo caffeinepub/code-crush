@@ -2,9 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
   Award,
+  BookOpen,
+  Calendar,
   Camera,
   CheckCircle,
+  Code,
   Flame,
+  LayoutDashboard,
+  MessageSquare,
   Palette,
   Pencil,
   ShoppingBag,
@@ -84,6 +89,37 @@ const DAILY_TIPS = [
   },
 ];
 
+const RELAX_TRACKS = [
+  {
+    id: "lofi",
+    name: "Lo-Fi Chill Beats",
+    emoji: "🎵",
+    url: "https://www.youtube.com/embed/jfKfPfyJRdk",
+    desc: "Chill & study",
+  },
+  {
+    id: "jazz",
+    name: "Study Jazz",
+    emoji: "🎷",
+    url: "https://www.youtube.com/embed/5yx6BWlEVcY",
+    desc: "Smooth focus",
+  },
+  {
+    id: "rain",
+    name: "Rain & Piano",
+    emoji: "🌧️",
+    url: "https://www.youtube.com/embed/lTRiuFIWV54",
+    desc: "Peaceful rain",
+  },
+  {
+    id: "deep",
+    name: "Deep Focus",
+    emoji: "🔮",
+    url: "https://www.youtube.com/embed/WPni755-Krg",
+    desc: "Deep work mode",
+  },
+];
+
 function relativeDate(isoDate: string): string {
   const now = Date.now();
   const then = new Date(isoDate).getTime();
@@ -101,7 +137,6 @@ export default function DashboardPage() {
   );
   const [activeSlot, setActiveSlot] = useState<ClothingSlot>("cap");
   const [showAvatarBuilder, setShowAvatarBuilder] = useState(false);
-  // Local draft of avatar during editing
   const [draftAvatar, setDraftAvatar] = useState<AvatarConfig>(
     user.avatarConfig ?? DEFAULT_AVATAR_CONFIG,
   );
@@ -118,10 +153,8 @@ export default function DashboardPage() {
   const ownedClothing = user.ownedClothing ?? [];
   const walletHistory: WalletEntry[] = user.walletHistory ?? [];
 
-  // Current displayed avatar config (saved one or default)
   const savedAvatarConfig = user.avatarConfig;
 
-  // Helpers
   const getEquipped = (slot: ClothingSlot) => equippedClothing[slot] ?? "";
 
   const slotItems = CLOTHING_ITEMS.filter((c) => c.slot === activeSlot);
@@ -150,7 +183,6 @@ export default function DashboardPage() {
     });
   };
 
-  // Rotate tips every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setTipIndex((prev) => (prev + 1) % DAILY_TIPS.length);
@@ -178,7 +210,6 @@ export default function DashboardPage() {
   };
 
   const handleEditAvatar = () => {
-    // Seed draft from saved config or default
     setDraftAvatar(user.avatarConfig ?? DEFAULT_AVATAR_CONFIG);
     setShowAvatarBuilder(true);
   };
@@ -237,6 +268,55 @@ export default function DashboardPage() {
                   i === tipIndex ? "w-5 bg-primary" : "w-1.5 bg-primary/30"
                 }`}
               />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Relax & Focus Music */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+          className="bg-card rounded-2xl p-5 border border-border"
+          data-ocid="dashboard.music.card"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">🎵</span>
+            <h3 className="font-semibold text-foreground">
+              Relax &amp; Focus Music
+            </h3>
+            <span className="ml-auto text-xs text-muted-foreground">
+              Click to play
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {RELAX_TRACKS.map((track) => (
+              <div
+                key={track.id}
+                className="rounded-xl overflow-hidden border border-border bg-muted"
+                data-ocid={`dashboard.music_${track.id}.card`}
+              >
+                <div className="flex items-center gap-2 px-3 py-2 bg-muted/60 border-b border-border">
+                  <span className="text-lg">{track.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">
+                      {track.name}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {track.desc}
+                    </p>
+                  </div>
+                </div>
+                <iframe
+                  src={track.url}
+                  title={track.name}
+                  width="100%"
+                  height="80"
+                  allow="autoplay; encrypted-media"
+                  className="block"
+                  style={{ border: "none" }}
+                />
+              </div>
             ))}
           </div>
         </motion.div>
@@ -519,7 +599,7 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* ── WHATSAPP-STYLE AVATAR ── */}
+        {/* ── WHATSAPP-STYLE AVATAR (Full body, no circle crop) ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -543,7 +623,7 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          {/* Avatar preview */}
+          {/* Avatar preview — full body, no circle crop */}
           <div className="flex flex-col items-center py-4 gap-3">
             {savedAvatarConfig ? (
               <motion.div
@@ -551,22 +631,15 @@ export default function DashboardPage() {
                 initial={{ scale: 0.85, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                className="relative"
+                className="relative flex items-center justify-center"
               >
-                {/* WhatsApp-style ring */}
+                {/* Glow halo behind avatar */}
                 <div
-                  className="rounded-full p-[3px] shadow-xl"
-                  style={{
-                    background: `conic-gradient(${savedAvatarConfig.outfitColor}, #f97316, #a855f7, ${savedAvatarConfig.outfitColor})`,
-                  }}
-                >
-                  <div className="rounded-full bg-background p-[3px]">
-                    <WhatsAppAvatar
-                      config={savedAvatarConfig}
-                      size={160}
-                      className="rounded-full"
-                    />
-                  </div>
+                  className="absolute inset-0 rounded-3xl blur-2xl opacity-30"
+                  style={{ background: savedAvatarConfig.outfitColor }}
+                />
+                <div className="relative bg-card/60 rounded-3xl p-4 border border-primary/20 shadow-xl">
+                  <WhatsAppAvatar config={savedAvatarConfig} size={200} />
                 </div>
               </motion.div>
             ) : (
@@ -622,19 +695,8 @@ export default function DashboardPage() {
               >
                 {/* Live preview while editing */}
                 <div className="flex justify-center mb-4">
-                  <div
-                    className="rounded-full p-[2px]"
-                    style={{
-                      background: `conic-gradient(${draftAvatar.outfitColor}, #f97316, #a855f7, ${draftAvatar.outfitColor})`,
-                    }}
-                  >
-                    <div className="rounded-full bg-background p-[2px]">
-                      <WhatsAppAvatar
-                        config={draftAvatar}
-                        size={120}
-                        className="rounded-full"
-                      />
-                    </div>
+                  <div className="bg-card/60 rounded-3xl p-3 border border-primary/20 shadow-lg">
+                    <WhatsAppAvatar config={draftAvatar} size={140} />
                   </div>
                 </div>
 
@@ -903,16 +965,57 @@ export default function DashboardPage() {
             })}
           </div>
         </motion.div>
-
-        <Button
-          data-ocid="dashboard.back.button"
-          variant="outline"
-          onClick={() => setPage("study")}
-          className="w-full rounded-full border-border text-muted-foreground hover:text-foreground"
-        >
-          Return to Study
-        </Button>
       </div>
+
+      {/* Sticky Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex items-stretch justify-around">
+        {[
+          {
+            tab: "study",
+            icon: <MessageSquare className="w-5 h-5" />,
+            label: "Chat",
+          },
+          {
+            tab: "study",
+            icon: <BookOpen className="w-5 h-5" />,
+            label: "Study",
+            key: "study2",
+          },
+          {
+            tab: "problems",
+            icon: <Code className="w-5 h-5" />,
+            label: "Problems",
+          },
+          {
+            tab: "dashboard",
+            icon: <LayoutDashboard className="w-5 h-5" />,
+            label: "Dashboard",
+            active: true,
+          },
+          {
+            tab: "events",
+            icon: <Calendar className="w-5 h-5" />,
+            label: "Events",
+          },
+        ].map((item) => (
+          <button
+            key={item.key ?? item.tab}
+            type="button"
+            data-ocid={`dashboard.nav_${item.label.toLowerCase()}.button`}
+            onClick={() =>
+              setPage(item.tab as "study" | "problems" | "dashboard" | "events")
+            }
+            className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-xs font-medium transition-colors ${
+              item.active
+                ? "text-primary border-t-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

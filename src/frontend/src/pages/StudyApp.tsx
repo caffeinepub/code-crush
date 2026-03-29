@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import WhatsAppAvatar from "../components/WhatsAppAvatar";
 import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 import { useAddMessage } from "../hooks/useQueries";
@@ -1442,6 +1443,11 @@ export default function StudyApp() {
             className="w-9 h-9 rounded-full object-cover drop-shadow-md"
           />
           <span className="font-bold text-foreground">Code &amp; Crush</span>
+          {user.avatarConfig && (
+            <div className="rounded-full overflow-hidden w-8 h-8 border-2 border-primary/40 shrink-0">
+              <WhatsAppAvatar config={user.avatarConfig} size={32} />
+            </div>
+          )}
           <span className="text-xs text-muted-foreground hidden sm:block bg-muted px-2 py-0.5 rounded-full">
             {activeAILabel}
           </span>

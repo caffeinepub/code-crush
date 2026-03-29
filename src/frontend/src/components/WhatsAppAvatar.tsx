@@ -29,6 +29,7 @@ const SKIN_TONES: Record<string, string> = {
   "medium-dark": "#C68642",
   dark: "#8D5524",
   "very-dark": "#4A2912",
+  tan: "#D4956A",
 };
 
 const HAIR_COLORS: Record<string, string> = {
@@ -40,6 +41,7 @@ const HAIR_COLORS: Record<string, string> = {
   white: "#E8E8E8",
   blue: "#4A90D9",
   purple: "#8E44AD",
+  pink: "#FF69B4",
 };
 
 const FALLBACK_SKIN = "#F5C89A";
@@ -114,24 +116,25 @@ export default function WhatsAppAvatar({
       {/* EYES */}
       <Eyes config={config} />
 
-      {/* NOSE */}
+      {/* NOSE - subtle */}
+      <ellipse cx="100" cy="128" rx="3" ry="2" fill={`${skin}66`} />
       <path
-        d="M98 118 Q95 126 98 130 Q100 132 102 130 Q105 126 102 118"
+        d="M97 125 Q100 130 103 125"
         stroke={`${skin}88`}
-        strokeWidth="1.5"
+        strokeWidth="1.2"
         fill="none"
         strokeLinecap="round"
       />
+
+      {/* Cheek blush */}
+      <ellipse cx="72" cy="128" rx="9" ry="6" fill="#FFB5C8" opacity="0.45" />
+      <ellipse cx="128" cy="128" rx="9" ry="6" fill="#FFB5C8" opacity="0.45" />
 
       {/* MOUTH */}
       <Mouth config={config} />
 
       {/* ACCESSORIES */}
       <Accessory config={config} />
-
-      {/* Cheek blush */}
-      <ellipse cx="72" cy="128" rx="8" ry="5" fill="#FF9E9E" opacity="0.35" />
-      <ellipse cx="128" cy="128" rx="8" ry="5" fill="#FF9E9E" opacity="0.35" />
     </svg>
   );
 }
@@ -164,6 +167,19 @@ function HairBack({ config, hair }: { config: AvatarConfig; hair: string }) {
           />
         </>
       );
+    case "curly":
+      return (
+        <>
+          <path
+            d="M56 108 Q46 130 50 152 Q56 165 63 168 Q57 145 60 118 Z"
+            fill={hair}
+          />
+          <path
+            d="M144 108 Q154 130 150 152 Q144 165 137 168 Q143 145 140 118 Z"
+            fill={hair}
+          />
+        </>
+      );
     default:
       return null;
   }
@@ -192,6 +208,9 @@ function HairFront({ config, hair }: { config: AvatarConfig; hair: string }) {
           <circle cx="110" cy="70" r="7" fill={hair} />
           <circle cx="125" cy="76" r="7" fill={hair} />
           <circle cx="138" cy="90" r="8" fill={hair} />
+          {/* Curly puffs extras */}
+          <circle cx="68" cy="82" r="5" fill={hair} />
+          <circle cx="132" cy="82" r="5" fill={hair} />
         </>
       );
     case "long":
@@ -208,8 +227,12 @@ function HairFront({ config, hair }: { config: AvatarConfig; hair: string }) {
             d="M60 108 Q62 80 100 76 Q138 80 140 108 Q134 86 122 80 Q112 76 100 77 Q88 76 78 80 Q66 86 60 108 Z"
             fill={hair}
           />
-          <circle cx="100" cy="64" r="14" fill={hair} />
-          <circle cx="100" cy="64" r="10" fill={hair} opacity="0.7" />
+          {/* Bun on top */}
+          <circle cx="100" cy="62" r="16" fill={hair} />
+          <circle cx="100" cy="62" r="11" fill={hair} opacity="0.75" />
+          <circle cx="100" cy="62" r="6" fill={hair} opacity="0.5" />
+          {/* Bun shine */}
+          <circle cx="95" cy="57" r="2.5" fill="white" opacity="0.2" />
         </>
       );
     case "buzz":
@@ -226,6 +249,21 @@ function HairFront({ config, hair }: { config: AvatarConfig; hair: string }) {
           d="M56 108 Q57 74 100 70 Q143 74 144 108 Q136 84 124 78 Q112 73 100 74 Q88 73 76 78 Q64 84 56 108 Z"
           fill={hair}
         />
+      );
+    case "spiky":
+      return (
+        <>
+          <path
+            d="M58 108 Q60 82 100 76 Q140 82 142 108 Q134 88 122 82 Q112 78 100 79 Q88 78 78 82 Q66 88 58 108 Z"
+            fill={hair}
+          />
+          {/* Spiky tips */}
+          <polygon points="72,82 68,62 78,80" fill={hair} />
+          <polygon points="84,76 82,56 90,74" fill={hair} />
+          <polygon points="100,73 98,52 104,72" fill={hair} />
+          <polygon points="116,76 118,56 110,74" fill={hair} />
+          <polygon points="128,82 132,62 122,80" fill={hair} />
+        </>
       );
     default:
       return (
@@ -379,26 +417,53 @@ function Eyes({ config }: { config: AvatarConfig }) {
     case "sleepy":
       return (
         <>
+          <path d="M76 115 Q84 120 92 115" fill="#f0e8e0" />
           <path
             d="M76 115 Q84 109 92 115"
             stroke="#3B2314"
             strokeWidth="2"
-            fill="none"
+            fill="#f0e8e0"
             strokeLinecap="round"
           />
-          <path d="M76 115 Q84 120 92 115" fill="white" />
-          <ellipse cx="84" cy="115" rx="4" ry="3" fill="#3B2314" />
+          <ellipse cx="84" cy="115" rx="4" ry="2.5" fill="#3B2314" />
           <circle cx="82.5" cy="113.5" r="1" fill="white" />
+          <path d="M108 115 Q116 120 124 115" fill="#f0e8e0" />
           <path
             d="M108 115 Q116 109 124 115"
             stroke="#3B2314"
             strokeWidth="2"
-            fill="none"
+            fill="#f0e8e0"
             strokeLinecap="round"
           />
-          <path d="M108 115 Q116 120 124 115" fill="white" />
-          <ellipse cx="116" cy="115" rx="4" ry="3" fill="#3B2314" />
+          <ellipse cx="116" cy="115" rx="4" ry="2.5" fill="#3B2314" />
           <circle cx="114.5" cy="113.5" r="1" fill="white" />
+        </>
+      );
+    case "sparkle":
+      return (
+        <>
+          {/* Left sparkle eye */}
+          <ellipse cx="84" cy="113" rx="8" ry="8" fill="white" />
+          <ellipse cx="84" cy="113" rx="5" ry="5" fill="#6B3FA0" />
+          {/* Star iris */}
+          <polygon
+            points="84,108 85.2,111.6 89,111.6 86,113.8 87.2,117.4 84,115.2 80.8,117.4 82,113.8 79,111.6 82.8,111.6"
+            fill="#FFD700"
+            opacity="0.9"
+            transform="scale(0.55) translate(68,55)"
+          />
+          <circle cx="82" cy="111" r="2" fill="white" opacity="0.8" />
+          <circle cx="87" cy="115" r="1" fill="white" opacity="0.6" />
+          {/* Right sparkle eye */}
+          <ellipse cx="116" cy="113" rx="8" ry="8" fill="white" />
+          <ellipse cx="116" cy="113" rx="5" ry="5" fill="#6B3FA0" />
+          <circle cx="114" cy="111" r="2" fill="white" opacity="0.8" />
+          <circle cx="119" cy="115" r="1" fill="white" opacity="0.6" />
+          {/* Sparkle dots */}
+          <circle cx="76" cy="107" r="1" fill="#FFD700" opacity="0.7" />
+          <circle cx="92" cy="106" r="1.2" fill="#FFD700" opacity="0.7" />
+          <circle cx="108" cy="107" r="1" fill="#FFD700" opacity="0.7" />
+          <circle cx="124" cy="106" r="1.2" fill="#FFD700" opacity="0.7" />
         </>
       );
     default:
@@ -488,36 +553,34 @@ function Accessory({ config }: { config: AvatarConfig }) {
     case "glasses":
       return (
         <>
-          <rect
-            x="74"
-            y="107"
-            width="20"
-            height="14"
-            rx="6"
+          <ellipse
+            cx="84"
+            cy="113"
+            rx="11"
+            ry="8"
             stroke="#555"
             strokeWidth="2"
             fill="none"
           />
-          <rect
-            x="106"
-            y="107"
-            width="20"
-            height="14"
-            rx="6"
+          <ellipse
+            cx="116"
+            cy="113"
+            rx="11"
+            ry="8"
             stroke="#555"
             strokeWidth="2"
             fill="none"
           />
           <line
-            x1="94"
+            x1="95"
             y1="113"
-            x2="106"
+            x2="105"
             y2="113"
             stroke="#555"
             strokeWidth="1.5"
           />
           <line
-            x1="74"
+            x1="73"
             y1="113"
             x2="60"
             y2="116"
@@ -525,7 +588,7 @@ function Accessory({ config }: { config: AvatarConfig }) {
             strokeWidth="1.5"
           />
           <line
-            x1="126"
+            x1="127"
             y1="113"
             x2="140"
             y2="116"
@@ -620,6 +683,30 @@ function Accessory({ config }: { config: AvatarConfig }) {
             stroke="#D4A017"
             strokeWidth="1"
           />
+        </>
+      );
+    case "headband":
+      return (
+        <>
+          {/* Headband strap across forehead */}
+          <path
+            d="M58 96 Q100 88 142 96"
+            stroke="#E91E8C"
+            strokeWidth="7"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M58 96 Q100 88 142 96"
+            stroke="#FF69B4"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+            opacity="0.5"
+          />
+          {/* Bow in center */}
+          <path d="M93 90 Q100 85 107 90 Q100 95 93 90 Z" fill="#FF1493" />
+          <circle cx="100" cy="90" r="2.5" fill="#FF69B4" />
         </>
       );
     default:

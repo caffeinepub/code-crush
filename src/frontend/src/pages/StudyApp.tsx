@@ -26,6 +26,7 @@ import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 import { useAddMessage } from "../hooks/useQueries";
 import { useResponseQueue } from "../hooks/useResponseQueue";
+import DashboardPage from "./DashboardPage";
 import EventsPage from "./EventsPage";
 
 const XP_PER_LEVEL = 100;
@@ -1419,10 +1420,6 @@ export default function StudyApp() {
       setPage("problems");
       return;
     }
-    if (tab === "dashboard") {
-      setPage("dashboard");
-      return;
-    }
     setActiveTab(tab);
   };
 
@@ -1769,6 +1766,9 @@ export default function StudyApp() {
           {/* Events Tab */}
           {activeTab === "events" && <EventsPage />}
 
+          {/* Dashboard Tab */}
+          {activeTab === "dashboard" && <DashboardPage embedded />}
+
           {/* Gemini-Style Chat */}
           {activeTab === "chat" && (
             <>
@@ -1912,10 +1912,8 @@ export default function StudyApp() {
               data-ocid={`bottomnav.${item.tab}.button`}
               onClick={() => handleTabClick(item.tab)}
               className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-xs font-medium transition-colors ${
-                activeTab === item.tab &&
-                item.tab !== "problems" &&
-                item.tab !== "dashboard"
-                  ? "text-primary border-t-2 border-primary"
+                activeTab === item.tab
+                  ? "text-primary border-t-2 border-primary bg-primary/10"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

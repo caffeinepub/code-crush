@@ -130,118 +130,120 @@ export default function EventsPage() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-background">
-      {/* Header */}
-      <div className="px-4 pt-6 pb-4">
-        <h2 className="text-xl font-extrabold text-foreground">
-          🎤 Events &amp; Opportunities
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Upcoming hackathons, fests &amp; competitions
-        </p>
-      </div>
+      <div className="max-w-2xl mx-auto w-full">
+        {/* Header */}
+        <div className="px-4 pt-6 pb-4">
+          <h2 className="text-xl font-extrabold text-foreground">
+            🎤 Events &amp; Opportunities
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Upcoming hackathons, fests &amp; competitions
+          </p>
+        </div>
 
-      {/* Filters */}
-      <div className="px-4 pb-4 flex gap-2 overflow-x-auto no-scrollbar">
-        {categories.map((cat) => (
-          <button
-            type="button"
-            key={cat}
-            data-ocid={`events.filter_${cat.toLowerCase()}.tab`}
-            onClick={() => setActiveFilter(cat)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
-              activeFilter === cat
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-muted text-muted-foreground border-border hover:border-primary/40"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Events List */}
-      <div className="px-4 pb-24 space-y-3">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((event, i) => (
-            <motion.div
-              key={event.id}
-              layout
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.25, delay: i * 0.04 }}
-              data-ocid={`events.item.${i + 1}`}
-              className="bg-card border border-border rounded-2xl p-4 relative overflow-hidden"
+        {/* Filters */}
+        <div className="px-4 pb-4 flex gap-2 overflow-x-auto no-scrollbar">
+          {categories.map((cat) => (
+            <button
+              type="button"
+              key={cat}
+              data-ocid={`events.filter_${cat.toLowerCase()}.tab`}
+              onClick={() => setActiveFilter(cat)}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
+                activeFilter === cat
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted text-muted-foreground border-border hover:border-primary/40"
+              }`}
             >
-              {event.hot && (
-                <div className="absolute top-3 right-3">
-                  <span className="text-xs bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-full font-semibold">
-                    🔥 Hot
-                  </span>
-                </div>
-              )}
+              {cat}
+            </button>
+          ))}
+        </div>
 
-              <div className="flex items-start gap-3 mb-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-foreground text-sm">
-                      {event.name}
-                    </h3>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[event.category]}`}
-                    >
-                      {event.category}
+        {/* Events List */}
+        <div className="px-4 pb-24 space-y-3">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((event, i) => (
+              <motion.div
+                key={event.id}
+                layout
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.25, delay: i * 0.04 }}
+                data-ocid={`events.item.${i + 1}`}
+                className="bg-card border border-border rounded-2xl p-4 relative overflow-hidden"
+              >
+                {event.hot && (
+                  <div className="absolute top-3 right-3">
+                    <span className="text-xs bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-full font-semibold">
+                      🔥 Hot
                     </span>
                   </div>
+                )}
+
+                <div className="flex items-start gap-3 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-foreground text-sm">
+                        {event.name}
+                      </h3>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[event.category]}`}
+                      >
+                        {event.category}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" /> {event.date}
-                </span>
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {event.location}
-                </span>
-              </div>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" /> {event.date}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3" /> {event.location}
+                  </span>
+                </div>
 
-              <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                {event.description}
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                  {event.description}
+                </p>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-primary">
+                    🏆 {event.prize}
+                  </span>
+                  <Button
+                    size="sm"
+                    data-ocid={`events.register.button.${i + 1}`}
+                    className="h-7 text-xs rounded-full bg-primary text-primary-foreground px-3"
+                    onClick={() => {
+                      if (event.link !== "#") window.open(event.link, "_blank");
+                    }}
+                  >
+                    {event.link !== "#" ? (
+                      <>
+                        <ExternalLink className="w-3 h-3 mr-1" /> Register
+                      </>
+                    ) : (
+                      "Coming Soon"
+                    )}
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16" data-ocid="events.empty_state">
+              <p className="text-4xl mb-3">🔍</p>
+              <p className="text-muted-foreground">
+                No events in this category yet.
               </p>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-primary">
-                  🏆 {event.prize}
-                </span>
-                <Button
-                  size="sm"
-                  data-ocid={`events.register.button.${i + 1}`}
-                  className="h-7 text-xs rounded-full bg-primary text-primary-foreground px-3"
-                  onClick={() => {
-                    if (event.link !== "#") window.open(event.link, "_blank");
-                  }}
-                >
-                  {event.link !== "#" ? (
-                    <>
-                      <ExternalLink className="w-3 h-3 mr-1" /> Register
-                    </>
-                  ) : (
-                    "Coming Soon"
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {filtered.length === 0 && (
-          <div className="text-center py-16" data-ocid="events.empty_state">
-            <p className="text-4xl mb-3">🔍</p>
-            <p className="text-muted-foreground">
-              No events in this category yet.
-            </p>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

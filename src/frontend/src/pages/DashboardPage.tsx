@@ -89,36 +89,307 @@ const DAILY_TIPS = [
   },
 ];
 
-const RELAX_TRACKS = [
+const AMBIENT_TRACKS = [
   {
     id: "lofi",
-    name: "Lo-Fi Chill Beats",
+    name: "Lo-Fi Chill",
     emoji: "🎵",
-    url: "https://www.youtube.com/embed/jfKfPfyJRdk",
-    desc: "Chill & study",
+    desc: "Brown noise + soft tones",
   },
+  {
+    id: "rain",
+    name: "Rain Sounds",
+    emoji: "🌧️",
+    desc: "Relaxing rain droplets",
+  },
+  { id: "white", name: "White Noise", emoji: "🔮", desc: "Pure focus noise" },
   {
     id: "jazz",
     name: "Study Jazz",
     emoji: "🎷",
-    url: "https://www.youtube.com/embed/5yx6BWlEVcY",
-    desc: "Smooth focus",
-  },
-  {
-    id: "rain",
-    name: "Rain & Piano",
-    emoji: "🌧️",
-    url: "https://www.youtube.com/embed/lTRiuFIWV54",
-    desc: "Peaceful rain",
-  },
-  {
-    id: "deep",
-    name: "Deep Focus",
-    emoji: "🔮",
-    url: "https://www.youtube.com/embed/WPni755-Krg",
-    desc: "Deep work mode",
+    desc: "Soft chord progressions",
   },
 ];
+
+function AmbientPlayer() {
+  const [playing, setPlaying] = useState<string | null>(null);
+  const [volume, setVolume] = useState(60);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
+  const stopRef = useRef<(() => void) | null>(null);
+
+  const getCtx = () => {
+    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+      audioCtxRef.current = new AudioContext();
+      masterGainRef.current = audioCtxRef.current.createGain();
+      masterGainRef.current.gain.value = volume / 100;
+      masterGainRef.current.connect(audioCtxRef.current.destination);
+    }
+    return { ctx: audioCtxRef.current, master: masterGainRef.current! };
+  };
+
+  const stopCurrent = () => {
+    if (stopRef.current) {
+      stopRef.current();
+      stopRef.current = null;
+    }
+  };
+
+  const playLofi = (ctx: AudioContext, master: GainNode) => {
+    const bufSize = ctx.sampleRate * 4;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0;
+    let b1 = 0;
+    let b2 = 0;
+    let b3 = 0;
+    let b4 = 0;
+    let b5 = 0;
+    let b6 = 0;
+    for (let i = 0; i < bufSize; i++) {
+      const w = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + w * 0.0555179;
+      b1 = 0.99332 * b1 + w * 0.0750759;
+      b2 = 0.969 * b2 + w * 0.153852;
+      b3 = 0.8665 * b3 + w * 0.3104856;
+      b4 = 0.55 * b4 + w * 0.5329522;
+      b5 = -0.7616 * b5 - w * 0.016898;
+      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+      b6 = w * 0.115926;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const lpf = ctx.createBiquadFilter();
+    lpf.type = "lowpass";
+    lpf.frequency.value = 200;
+    const delay = ctx.createDelay(0.5);
+    delay.delayTime.value = 0.3;
+    const fb = ctx.createGain();
+    fb.gain.value = 0.25;
+    src.connect(lpf);
+    lpf.connect(master);
+    lpf.connect(delay);
+    delay.connect(fb);
+    fb.connect(delay);
+    delay.connect(master);
+    // Occasional sine tone
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = 220;
+    const oscGain = ctx.createGain();
+    oscGain.gain.value = 0;
+    osc.connect(oscGain);
+    oscGain.connect(master);
+    src.start();
+    osc.start();
+    let t = 0;
+    const iv = setInterval(() => {
+      t++;
+      if (t % 8 === 0) {
+        oscGain.gain.setTargetAtTime(0.04, ctx.currentTime, 0.1);
+        oscGain.gain.setTargetAtTime(0, ctx.currentTime + 1, 0.3);
+      }
+    }, 1000);
+    return () => {
+      clearInterval(iv);
+      try {
+        src.stop();
+        osc.stop();
+      } catch (_) {}
+    };
+  };
+
+  const playRain = (ctx: AudioContext, master: GainNode) => {
+    const bufSize = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const bpf = ctx.createBiquadFilter();
+    bpf.type = "bandpass";
+    bpf.frequency.value = 1200;
+    bpf.Q.value = 0.5;
+    const g = ctx.createGain();
+    g.gain.value = 0.3;
+    src.connect(bpf);
+    bpf.connect(g);
+    g.connect(master);
+    src.start();
+    let on = true;
+    const iv = setInterval(() => {
+      if (!on) return;
+      const t = ctx.currentTime;
+      g.gain.setTargetAtTime(0.1 + Math.random() * 0.3, t, 0.05);
+    }, 80);
+    return () => {
+      on = false;
+      clearInterval(iv);
+      try {
+        src.stop();
+      } catch (_) {}
+    };
+  };
+
+  const playWhite = (ctx: AudioContext, master: GainNode) => {
+    const bufSize = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const lpf = ctx.createBiquadFilter();
+    lpf.type = "lowpass";
+    lpf.frequency.value = 1500;
+    const g = ctx.createGain();
+    g.gain.value = 0.2;
+    src.connect(lpf);
+    lpf.connect(g);
+    g.connect(master);
+    src.start();
+    return () => {
+      try {
+        src.stop();
+      } catch (_) {}
+    };
+  };
+
+  const playJazz = (ctx: AudioContext, master: GainNode) => {
+    const chords = [
+      [261, 329, 392, 523],
+      [293, 370, 440, 587],
+      [349, 440, 523, 698],
+      [261, 329, 392, 523],
+    ];
+    let ci = 0;
+    let active: OscillatorNode[] = [];
+    const playChord = () => {
+      for (const o of active) {
+        try {
+          o.stop();
+        } catch (_) {}
+      }
+      active = [];
+      const chord = chords[ci++ % chords.length];
+      for (const freq of chord) {
+        const osc = ctx.createOscillator();
+        osc.type = "triangle";
+        osc.frequency.value = freq;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 0.1);
+        g.gain.setTargetAtTime(0.03, ctx.currentTime + 0.1, 0.5);
+        osc.connect(g);
+        g.connect(master);
+        osc.start();
+        active.push(osc);
+      }
+    };
+    playChord();
+    const iv = setInterval(playChord, 2500);
+    return () => {
+      clearInterval(iv);
+      for (const o of active) {
+        try {
+          o.stop();
+        } catch (_) {}
+      }
+    };
+  };
+
+  const toggle = (id: string) => {
+    if (playing === id) {
+      stopCurrent();
+      setPlaying(null);
+      return;
+    }
+    stopCurrent();
+    const { ctx, master } = getCtx();
+    if (ctx.state === "suspended") ctx.resume();
+    let stop: () => void;
+    if (id === "lofi") stop = playLofi(ctx, master);
+    else if (id === "rain") stop = playRain(ctx, master);
+    else if (id === "white") stop = playWhite(ctx, master);
+    else stop = playJazz(ctx, master);
+    stopRef.current = stop;
+    setPlaying(id);
+  };
+
+  useEffect(() => {
+    if (masterGainRef.current) masterGainRef.current.gain.value = volume / 100;
+  }, [volume]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cleanup on unmount only
+  useEffect(() => {
+    return () => {
+      stopCurrent();
+      if (audioCtxRef.current) audioCtxRef.current.close();
+    };
+  }, []);
+
+  return (
+    <div>
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        {AMBIENT_TRACKS.map((track) => {
+          const isPlaying = playing === track.id;
+          return (
+            <div
+              key={track.id}
+              className={`rounded-xl p-4 border transition-all cursor-pointer ${isPlaying ? "border-primary bg-primary/10 shadow-lg" : "border-border bg-muted hover:border-primary/40"}`}
+              data-ocid={`dashboard.music_${track.id}.card`}
+              onClick={() => toggle(track.id)}
+              onKeyDown={(e) => e.key === "Enter" && toggle(track.id)}
+              // biome-ignore lint/a11y/useSemanticElements: card container needs div
+              role="button"
+              tabIndex={0}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span
+                  className={`text-2xl ${isPlaying ? "animate-bounce" : ""}`}
+                >
+                  {track.emoji}
+                </span>
+                {isPlaying && (
+                  <span className="inline-flex w-2.5 h-2.5 rounded-full bg-primary animate-ping opacity-75" />
+                )}
+              </div>
+              <p className="text-sm font-semibold text-foreground">
+                {track.name}
+              </p>
+              <p className="text-xs text-muted-foreground mb-3">{track.desc}</p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle(track.id);
+                }}
+                className={`w-full py-1.5 rounded-lg text-xs font-semibold transition-colors ${isPlaying ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-primary/10"}`}
+              >
+                {isPlaying ? "⏸ Pause" : "▶ Play"}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-muted-foreground">🔈</span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={volume}
+          onChange={(e) => setVolume(Number(e.target.value))}
+          className="flex-1 accent-primary"
+          data-ocid="dashboard.music.volume_input"
+        />
+        <span className="text-xs text-muted-foreground w-8">{volume}%</span>
+      </div>
+    </div>
+  );
+}
 
 function relativeDate(isoDate: string): string {
   const now = Date.now();
@@ -130,7 +401,9 @@ function relativeDate(isoDate: string): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-export default function DashboardPage() {
+export default function DashboardPage({
+  embedded = false,
+}: { embedded?: boolean } = {}) {
   const { user, setUser, setPage, appTheme, setAppTheme } = useApp();
   const [tipIndex, setTipIndex] = useState(() =>
     Math.floor(Math.random() * DAILY_TIPS.length),
@@ -229,14 +502,16 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
-        <img
-          src="/assets/generated/code-crush-logo-transparent.dim_400x400.png"
-          alt="Code & Crush"
-          className="w-7 h-7 rounded-full object-cover"
-        />
-        <h1 className="font-bold text-foreground">Dashboard</h1>
-      </header>
+      {!embedded && (
+        <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+          <img
+            src="/assets/generated/code-crush-logo-transparent.dim_400x400.png"
+            alt="Code & Crush"
+            className="w-7 h-7 rounded-full object-cover"
+          />
+          <h1 className="font-bold text-foreground">Dashboard</h1>
+        </header>
+      )}
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-5 pb-24">
         {/* Daily Tip */}
@@ -285,40 +560,8 @@ export default function DashboardPage() {
             <h3 className="font-semibold text-foreground">
               Relax &amp; Focus Music
             </h3>
-            <span className="ml-auto text-xs text-muted-foreground">
-              Click to play
-            </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {RELAX_TRACKS.map((track) => (
-              <div
-                key={track.id}
-                className="rounded-xl overflow-hidden border border-border bg-muted"
-                data-ocid={`dashboard.music_${track.id}.card`}
-              >
-                <div className="flex items-center gap-2 px-3 py-2 bg-muted/60 border-b border-border">
-                  <span className="text-lg">{track.emoji}</span>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">
-                      {track.name}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {track.desc}
-                    </p>
-                  </div>
-                </div>
-                <iframe
-                  src={track.url}
-                  title={track.name}
-                  width="100%"
-                  height="80"
-                  allow="autoplay; encrypted-media"
-                  className="block"
-                  style={{ border: "none" }}
-                />
-              </div>
-            ))}
-          </div>
+          <AmbientPlayer />
         </motion.div>
 
         {/* Hero Profile Card */}
@@ -505,7 +748,7 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          transition={{ duration: 0.2 }}
           className="bg-card rounded-2xl p-5 border border-border"
         >
           <div className="flex items-center gap-3">
@@ -967,55 +1210,59 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* Sticky Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex items-stretch justify-around">
-        {[
-          {
-            tab: "study",
-            icon: <MessageSquare className="w-5 h-5" />,
-            label: "Chat",
-          },
-          {
-            tab: "study",
-            icon: <BookOpen className="w-5 h-5" />,
-            label: "Study",
-            key: "study2",
-          },
-          {
-            tab: "problems",
-            icon: <Code className="w-5 h-5" />,
-            label: "Problems",
-          },
-          {
-            tab: "dashboard",
-            icon: <LayoutDashboard className="w-5 h-5" />,
-            label: "Dashboard",
-            active: true,
-          },
-          {
-            tab: "events",
-            icon: <Calendar className="w-5 h-5" />,
-            label: "Events",
-          },
-        ].map((item) => (
-          <button
-            key={item.key ?? item.tab}
-            type="button"
-            data-ocid={`dashboard.nav_${item.label.toLowerCase()}.button`}
-            onClick={() =>
-              setPage(item.tab as "study" | "problems" | "dashboard" | "events")
-            }
-            className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-xs font-medium transition-colors ${
-              item.active
-                ? "text-primary border-t-2 border-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {item.icon}
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
+      {/* Sticky Bottom Navigation Bar — only shown when NOT embedded in StudyApp */}
+      {!embedded && (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex items-stretch justify-around">
+          {[
+            {
+              tab: "study",
+              key: "chat",
+              icon: <MessageSquare className="w-5 h-5" />,
+              label: "Chat",
+            },
+            {
+              tab: "study",
+              icon: <BookOpen className="w-5 h-5" />,
+              label: "Study",
+            },
+            {
+              tab: "events",
+              icon: <Calendar className="w-5 h-5" />,
+              label: "Events",
+            },
+            {
+              tab: "problems",
+              icon: <Code className="w-5 h-5" />,
+              label: "Problems",
+            },
+            {
+              tab: "dashboard",
+              icon: <LayoutDashboard className="w-5 h-5" />,
+              label: "Dashboard",
+              active: true,
+            },
+          ].map((item) => (
+            <button
+              key={(item as any).key ?? item.tab}
+              type="button"
+              data-ocid={`dashboard.nav_${item.label.toLowerCase()}.button`}
+              onClick={() =>
+                setPage(
+                  item.tab as "study" | "problems" | "dashboard" | "events",
+                )
+              }
+              className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-xs font-medium transition-colors ${
+                item.active
+                  ? "text-primary border-t-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }

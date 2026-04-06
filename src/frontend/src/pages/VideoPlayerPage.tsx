@@ -126,7 +126,7 @@ export default function VideoPlayerPage({
 }: VideoPlayerPageProps) {
   const videoId = extractYouTubeId(videoUrl);
   const embedUrl = videoId
-    ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0&origin=https://ic0.app`
     : null;
 
   const systemPrompt = `You are a helpful study companion for Code & Crush. The user is watching a YouTube video titled "${videoLabel}" about "${topicTitle}". Help them understand the topic, answer questions, and explain concepts clearly. Keep responses concise and friendly. Here are the study notes for context:\n\n${topicNotes}`;

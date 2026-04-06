@@ -1,9 +1,16 @@
-import { BookOpen, ChevronDown, Play, StickyNote, X } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ExternalLink,
+  Play,
+  StickyNote,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { ROADMAPS, type Roadmap, type RoadmapTopic } from "../data/roadmaps";
+import { ROADMAPS, type Roadmap } from "../data/roadmaps";
 
-type View = "list" | "roadmap" | "topic";
+type View = "list" | "roadmap";
 
 export default function RoadmapPage() {
   const [view, setView] = useState<View>("list");
@@ -59,8 +66,8 @@ export default function RoadmapPage() {
               Developer Roadmaps
             </h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Choose your path and follow a structured learning roadmap with
-              videos and notes.
+              Choose your path. Each topic has videos, detailed study notes, and
+              official docs for revision.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-3">
@@ -151,7 +158,6 @@ export default function RoadmapPage() {
               </div>
             </div>
           </div>
-          {/* Progress bar */}
           <div className="max-w-2xl mx-auto mt-2">
             <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
               <motion.div
@@ -164,22 +170,20 @@ export default function RoadmapPage() {
           </div>
         </div>
 
-        {/* Topic list with connecting line */}
+        {/* Topic list */}
         <div className="px-4 pt-4 max-w-2xl mx-auto">
           <div className="relative">
-            {/* Vertical spine */}
             <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border z-0" />
-
             <div className="space-y-3 relative z-10">
               {selectedRoadmap.topics.map((topic, idx) => {
-                const done = isCompleted(selectedRoadmap.id, topic.id);
+                const isDone = isCompleted(selectedRoadmap.id, topic.id);
                 const expanded = expandedTopic === topic.id;
                 return (
                   <motion.div
                     key={topic.id}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.06 }}
+                    transition={{ delay: idx * 0.05 }}
                   >
                     <div className="flex items-start gap-3">
                       {/* Circle node */}
@@ -189,12 +193,12 @@ export default function RoadmapPage() {
                           toggleComplete(selectedRoadmap.id, topic.id)
                         }
                         className={`mt-3.5 w-10 h-10 rounded-full shrink-0 border-2 flex items-center justify-center font-bold text-sm transition-all ${
-                          done
+                          isDone
                             ? "bg-primary border-primary text-primary-foreground"
                             : "bg-background border-border text-muted-foreground hover:border-primary/50"
                         }`}
                       >
-                        {done ? "✓" : idx + 1}
+                        {isDone ? "✓" : idx + 1}
                       </button>
 
                       {/* Card */}
@@ -214,9 +218,7 @@ export default function RoadmapPage() {
                               {topic.description}
                             </div>
                             <span
-                              className={`mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full border ${
-                                levelColor[topic.level]
-                              }`}
+                              className={`mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full border ${levelColor[topic.level]}`}
                             >
                               {topic.level}
                             </span>
@@ -239,7 +241,7 @@ export default function RoadmapPage() {
                               transition={{ duration: 0.22 }}
                               className="overflow-hidden"
                             >
-                              <div className="px-3 pb-3 space-y-2 border-t border-border pt-3">
+                              <div className="px-3 pb-3 space-y-3 border-t border-border pt-3">
                                 {/* Videos */}
                                 <div>
                                   <div className="flex items-center gap-1.5 text-xs font-bold text-red-400 uppercase tracking-wide mb-1.5">
@@ -266,18 +268,47 @@ export default function RoadmapPage() {
                                   </div>
                                 </div>
 
-                                {/* Notes */}
+                                {/* Study Notes */}
                                 <div>
                                   <div className="flex items-center gap-1.5 text-xs font-bold text-blue-400 uppercase tracking-wide mb-1.5">
                                     <StickyNote className="w-3.5 h-3.5" /> Study
                                     Notes
                                   </div>
                                   <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl px-3 py-2.5">
-                                    <p className="text-xs text-foreground/80 leading-relaxed">
+                                    <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-line">
                                       {topic.notes}
                                     </p>
                                   </div>
                                 </div>
+
+                                {/* Docs & References */}
+                                {topic.docs && topic.docs.length > 0 && (
+                                  <div>
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 uppercase tracking-wide mb-1.5">
+                                      <BookOpen className="w-3.5 h-3.5" /> Docs
+                                      & References
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-1.5">
+                                      {topic.docs.map((doc) => (
+                                        <a
+                                          key={doc.url}
+                                          href={doc.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="flex items-center gap-2 rounded-xl bg-emerald-500/5 border border-emerald-500/20 px-3 py-2 hover:bg-emerald-500/10 transition-colors group"
+                                        >
+                                          <ExternalLink className="w-3 h-3 text-emerald-400 shrink-0" />
+                                          <span className="text-xs font-medium text-foreground flex-1 group-hover:text-emerald-300 transition-colors">
+                                            {doc.label}
+                                          </span>
+                                          <span className="text-xs text-emerald-400/60">
+                                            ↗
+                                          </span>
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
 
                                 {/* Mark complete */}
                                 <button
@@ -286,12 +317,12 @@ export default function RoadmapPage() {
                                     toggleComplete(selectedRoadmap.id, topic.id)
                                   }
                                   className={`w-full rounded-xl py-2 text-sm font-semibold transition-colors ${
-                                    done
+                                    isDone
                                       ? "bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
                                       : "bg-primary text-primary-foreground hover:bg-primary/90"
                                   }`}
                                 >
-                                  {done
+                                  {isDone
                                     ? "✓ Completed — Click to undo"
                                     : "Mark as Complete"}
                                 </button>

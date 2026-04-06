@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import MultiLangCompiler from "../components/MultiLangCompiler";
 import ProjectsSection from "../components/ProjectsSection";
 import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
@@ -636,9 +637,9 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
 
 export default function ProblemsPage() {
   const { currentProblemId, setCurrentProblemId, setPage } = useApp();
-  const [activeTab, setActiveTab] = useState<"problems" | "projects">(
-    "problems",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "problems" | "projects" | "compiler"
+  >("problems");
 
   const currentProblem = currentProblemId
     ? CODING_PROBLEMS.find((p) => p.id === currentProblemId)
@@ -667,39 +668,12 @@ export default function ProblemsPage() {
             </p>
           </div>
 
-          {/* Tab switcher */}
-          <div className="flex gap-2 mb-6" data-ocid="problems.tab">
-            <button
-              type="button"
-              onClick={() => setActiveTab("problems")}
-              data-ocid="problems.tab"
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${
-                activeTab === "problems"
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"
-              }`}
-            >
-              🧩 Problems
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("projects")}
-              data-ocid="projects.tab"
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${
-                activeTab === "projects"
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"
-              }`}
-            >
-              🛠️ Projects
-            </button>
-          </div>
-
-          {/* Code Visualizer Banner — always visible */}
+          {/* Code Visualizer Banner — always visible above tabs */}
           <button
             type="button"
             onClick={() => setPage("code-visualizer" as any)}
-            className="w-full mb-6 bg-gradient-to-r from-violet-500 to-pink-500 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+            className="w-full mb-5 bg-gradient-to-r from-violet-500 to-pink-500 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+            data-ocid="problems.button"
           >
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
               🔍
@@ -713,12 +687,40 @@ export default function ProblemsPage() {
                 variables, arrays &amp; speed control
               </div>
             </div>
-            <div className="text-white/60 text-lg">›</div>
+            <div className="text-white/60 text-lg">&rsaquo;</div>
           </button>
+
+          {/* Tab switcher */}
+          <div className="flex gap-2 mb-6 flex-wrap" data-ocid="problems.tab">
+            <button
+              type="button"
+              onClick={() => setActiveTab("problems")}
+              data-ocid="problems.tab"
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${activeTab === "problems" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"}`}
+            >
+              🧩 Problems
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("projects")}
+              data-ocid="projects.tab"
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${activeTab === "projects" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"}`}
+            >
+              🛠️ Projects
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("compiler")}
+              data-ocid="compiler.tab"
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${activeTab === "compiler" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"}`}
+            >
+              💻 Compiler
+            </button>
+          </div>
 
           {/* Tab content */}
           <AnimatePresence mode="wait">
-            {activeTab === "problems" ? (
+            {activeTab === "problems" && (
               <motion.div
                 key="problems"
                 initial={{ opacity: 0, y: 10 }}
@@ -760,7 +762,8 @@ export default function ProblemsPage() {
                   </div>
                 </div>
               </motion.div>
-            ) : (
+            )}
+            {activeTab === "projects" && (
               <motion.div
                 key="projects"
                 initial={{ opacity: 0, y: 10 }}
@@ -769,6 +772,19 @@ export default function ProblemsPage() {
                 transition={{ duration: 0.18 }}
               >
                 <ProjectsSection />
+              </motion.div>
+            )}
+            {activeTab === "compiler" && (
+              <motion.div
+                key="compiler"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.18 }}
+                className="rounded-2xl border border-[#3a3a55] p-5"
+                style={{ background: "#0d0d1a" }}
+              >
+                <MultiLangCompiler />
               </motion.div>
             )}
           </AnimatePresence>

@@ -1,27 +1,22 @@
 # Code & Crush
 
 ## Current State
-Chat header shows logo + app name but no user cartoon avatar. Dashboard shows cartoon avatar in small circle, no bottom nav bar, has Return to Study button. WhatsAppAvatar SVG has basic features.
+ProblemsPage has: problem list, problem solver with JS-only editor, Code Visualizer banner (navigates to CodeVisualizationPage), and Projects section. The code editor is JS-only with no execution engine and no way to save code snippets.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Cartoon avatar (small circle) in chat header
-- Relax music player in Dashboard (3-5 tracks)
-- Sticky bottom nav bar in Dashboard
-- Enhanced WhatsAppAvatar with more features
+- **MultiLang Compiler** component: a full-featured code editor + runner supporting 20+ languages (Python, Java, C, C++, JavaScript, TypeScript, Go, Rust, Ruby, PHP, Swift, Kotlin, R, C#, Bash, etc.) using the free Piston API (https://emkc.org/api/v2/piston/execute). Features: language selector dropdown, code editor with line numbers, stdin input, Run button, output panel showing stdout/stderr/exit code, execution status badge.
+- **Code Storage** feature: a "My Saved Codes" panel inside the compiler that lets users save named snippets to localStorage. Shows list of saved snippets (name, language, date). Click to load. Delete option.
+- **Placement**: Compiler lives as a new tab in ProblemsPage (alongside Problems, Projects). Code Visualizer banner stays above the tabs so it remains easy to reach from any tab.
 
 ### Modify
-- Dashboard: show avatar full-size (not cropped)
-- Chat header: add 32px circular avatar
+- `ProblemsPage.tsx`: Add a 3rd tab "💻 Compiler" next to Problems and Projects. Render the new MultiLangCompiler component on that tab. Move the Code Visualizer banner above the tab bar so it's always visible.
 
 ### Remove
-- Return to Study button from Dashboard
+- Nothing removed.
 
 ## Implementation Plan
-1. Remove Return to Study button from DashboardPage
-2. Add sticky bottom nav to DashboardPage
-3. Show full avatar in Dashboard (larger, not circle-cropped)
-4. Add small avatar in chat header
-5. Add relax music section in Dashboard
-6. Enhance WhatsAppAvatar SVG with nose, blush, more hairstyles, accessories
+1. Create `src/frontend/src/components/MultiLangCompiler.tsx` — language selector, editor, stdin, run via Piston API, output panel, loading/error states.
+2. Create `src/frontend/src/components/CodeStorage.tsx` — save/load/delete snippets from localStorage, rendered as a collapsible sidebar inside the compiler.
+3. Update `ProblemsPage.tsx` — add "Compiler" tab, import and render the new component, keep Code Visualizer banner visible above tabs.

@@ -6,16 +6,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  BookOpen,
   Brain,
   Code,
+  Code2,
   Heart,
+  Layers,
   Mail,
   MapPin,
+  MessageSquare,
+  Mic,
+  Music,
   Phone,
   Shield,
   Sparkles,
   Star,
   Trophy,
+  Users,
+  Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -110,7 +118,7 @@ const companions = [
   {
     name: "Nova",
     traits: "Sharp · Witty",
-    img: "/assets/generated/companion-luna.dim_200x200.png",
+    img: "/assets/generated/companion-nova.dim_200x200.png",
     color: "#8C84D8",
   },
 ];
@@ -333,6 +341,124 @@ function SavedReviews() {
   );
 }
 
+function TeamCarousel() {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const goTo = (index: number, dir: number) => {
+    if (isAnimating) return;
+    setDirection(dir);
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrent(index);
+      setIsAnimating(false);
+    }, 300);
+  };
+
+  const next = () => {
+    goTo((current + 1) % TEAM.length, 1);
+  };
+
+  const prev = () => {
+    goTo((current - 1 + TEAM.length) % TEAM.length, -1);
+  };
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setCurrent((c) => (c + 1) % TEAM.length);
+      setDirection(1);
+    }, 3000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const handleDragStart = (clientX: number) => {
+    dragStartX.current = clientX;
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  };
+
+  const handleDragEnd = (clientX: number) => {
+    if (dragStartX.current === null) return;
+    const diff = dragStartX.current - clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) next();
+      else prev();
+    }
+    dragStartX.current = null;
+    intervalRef.current = setInterval(() => {
+      setCurrent((c) => (c + 1) % TEAM.length);
+      setDirection(1);
+    }, 3000);
+  };
+
+  const member = TEAM[current];
+
+  return (
+    <div className="mt-4 select-none">
+      <div
+        className="relative overflow-hidden"
+        onMouseDown={(e) => handleDragStart(e.clientX)}
+        onMouseUp={(e) => handleDragEnd(e.clientX)}
+        onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
+        onTouchEnd={(e) => handleDragEnd(e.changedTouches[0].clientX)}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: direction > 0 ? 60 : -60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -60 : 60 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="rounded-2xl border border-blue-100 p-5 flex items-center gap-4 bg-blue-50 cursor-grab active:cursor-grabbing"
+          >
+            <div
+              className={`w-16 h-16 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-3xl shrink-0`}
+            >
+              {member.emoji}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-extrabold text-blue-900 text-lg">
+                {member.name}
+              </h3>
+              <span
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${member.badge} inline-block mb-1`}
+              >
+                {member.role}
+              </span>
+              <p className="text-xs text-blue-700 leading-relaxed">
+                {member.bio}
+              </p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-2 mt-3">
+        {TEAM.map((teamMember, i) => (
+          <button
+            key={teamMember.name}
+            type="button"
+            onClick={() => goTo(i, i > current ? 1 : -1)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              i === current ? "bg-blue-600 w-5" : "bg-blue-200 w-2"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Swipe hint */}
+      <p className="text-center text-xs text-blue-400 mt-2">
+        Swipe or drag to explore team
+      </p>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const { setPage, setCurrentProblemId } = useApp();
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -346,27 +472,87 @@ export default function LandingPage() {
   const features = [
     {
       icon: Heart,
-      title: "AI Companion",
-      desc: "A personalized virtual study partner who adapts to your mood and learning style.",
+      title: "AI Study Companion",
+      desc: "Choose from 7 unique AI companions — each with their own personality, voice, and teaching style. They adapt to your mood and keep you motivated.",
       color: "text-pink-400",
+      emoji: "💕",
     },
     {
       icon: Brain,
-      title: "Smart Learning",
-      desc: "AI-powered explanations for CS concepts, tailored quizzes, and instant feedback.",
+      title: "Smart CS Roadmap",
+      desc: "15+ developer tracks: Frontend, Backend, Full Stack, Python, Java, ML, DevOps, iOS, Android, Cybersecurity, Blockchain, Cloud, and more — each with curated videos and notes.",
       color: "text-blue-400",
+      emoji: "🧠",
     },
     {
       icon: Trophy,
-      title: "Gamified XP",
-      desc: "Earn XP, level up, unlock badges, and maintain streaks to stay motivated.",
+      title: "Gamified XP & Badges",
+      desc: "Earn XP for every quiz, problem, and challenge. Level up, collect badges, maintain study streaks, and track your relationship progress with your companion.",
       color: "text-yellow-400",
+      emoji: "🏆",
     },
     {
       icon: Shield,
       title: "Burnout Guard",
-      desc: "Smart frustration detection that adapts your companion's tone to support you.",
+      desc: "Smart frustration detection that adapts your companion's tone to support you through tough sessions. Focus mode nudges you if you leave the tab.",
       color: "text-green-400",
+      emoji: "🛡️",
+    },
+    {
+      icon: Code2,
+      title: "Code Studio",
+      desc: "10+ real coding challenges with a dark editor, hints (no API key needed), companion-assisted solving, and relationship progress tracking.",
+      color: "text-cyan-400",
+      emoji: "💻",
+    },
+    {
+      icon: Zap,
+      title: "Code Visualizer",
+      desc: "See algorithms come alive — Bubble Sort, Binary Search, Fibonacci, Two Sum — with step-by-step animated frames, speed controls, and zoom.",
+      color: "text-orange-400",
+      emoji: "⚡",
+    },
+    {
+      icon: Layers,
+      title: "Multi-Language Compiler",
+      desc: "Write, run, and save code in 20+ languages. Save snippets by name, reload them anytime — Python, Java, C++, Go, Rust, and more.",
+      color: "text-violet-400",
+      emoji: "🔧",
+    },
+    {
+      icon: BookOpen,
+      title: "Project-Based Learning",
+      desc: "12+ real projects broken into small guided tasks. Starter code, hints, and a companion chat for guidance — upload your finished project to GitHub.",
+      color: "text-emerald-400",
+      emoji: "📚",
+    },
+    {
+      icon: Mic,
+      title: "Love Call (Voice AI)",
+      desc: "Two-way human-like voice calls with your companion. Powered by ElevenLabs + Web Speech API. Works with or without an API key.",
+      color: "text-rose-400",
+      emoji: "📞",
+    },
+    {
+      icon: MessageSquare,
+      title: "Chat Without API",
+      desc: "15+ conversation topics with fuzzy matching. Your companion talks naturally about greetings, hobbies, food, and more — even without an API key.",
+      color: "text-sky-400",
+      emoji: "💬",
+    },
+    {
+      icon: Users,
+      title: "Avatar Builder",
+      desc: "WhatsApp-style cartoon avatar customization — skin tone, hair, eyes, mouth, outfits, accessories, glasses, headband, and more.",
+      color: "text-fuchsia-400",
+      emoji: "🎨",
+    },
+    {
+      icon: Music,
+      title: "Relax Music & Themes",
+      desc: "4 ambient tracks (Lo-Fi, Rain, White Noise, Study Jazz) playing natively in the Dashboard. Plus 6 UI themes: Default, Romantic, Chill, Motivation, Focus, Night.",
+      color: "text-teal-400",
+      emoji: "🎵",
     },
   ];
 
@@ -398,33 +584,7 @@ export default function LandingPage() {
               Code &amp; Crush is an AI-powered Virtual StudyDate Companion that
               makes learning CS interactive, emotional, and less isolating.
             </p>
-            <div className="grid grid-cols-1 gap-4 mt-4">
-              {TEAM.map((member) => (
-                <div
-                  key={member.name}
-                  className="rounded-2xl border border-blue-100 p-4 flex items-center gap-4 bg-blue-50"
-                >
-                  <div
-                    className={`w-14 h-14 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-2xl shrink-0`}
-                  >
-                    {member.emoji}
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-blue-900">
-                      {member.name}
-                    </h3>
-                    <span
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-full ${member.badge}`}
-                    >
-                      {member.role}
-                    </span>
-                    <p className="text-xs text-blue-700 leading-relaxed mt-1">
-                      {member.bio}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <TeamCarousel />
           </div>
         </DialogContent>
       </Dialog>
@@ -787,20 +947,23 @@ export default function LandingPage() {
               Everything You Need to Succeed
             </h2>
           </motion.div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feat, i) => (
               <motion.div
                 key={feat.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="bg-background rounded-2xl p-6 border border-border"
+                transition={{ duration: 0.5, delay: (i % 6) * 0.08 }}
+                className="bg-background rounded-2xl p-6 border border-border hover:border-primary/40 transition-colors"
               >
-                <div
-                  className={`w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-4 ${feat.color}`}
-                >
-                  <feat.icon className="w-6 h-6" />
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className={`w-12 h-12 rounded-2xl bg-muted flex items-center justify-center ${feat.color} shrink-0`}
+                  >
+                    <feat.icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-2xl">{feat.emoji}</span>
                 </div>
                 <h3 className="font-bold text-foreground mb-2">{feat.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">

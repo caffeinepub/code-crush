@@ -690,8 +690,41 @@ export default function ProblemsPage() {
             <div className="text-white/60 text-lg">&rsaquo;</div>
           </button>
 
+          {/* Compiler Banner — quick-jump to the compiler tab */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("compiler");
+              setTimeout(() => {
+                document
+                  .getElementById("compiler-section")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }, 50);
+            }}
+            className="w-full mb-5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+            data-ocid="compiler.banner"
+          >
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
+              💻
+            </div>
+            <div className="flex-1">
+              <div className="text-white font-extrabold text-base">
+                Multi-Language Compiler
+              </div>
+              <div className="text-white/80 text-xs mt-0.5">
+                Write &amp; run code in 20 languages — Python, Java, C++, Go,
+                Rust &amp; more. Save your snippets.
+              </div>
+            </div>
+            <div className="text-white/60 text-lg">&rsaquo;</div>
+          </button>
+
           {/* Tab switcher */}
-          <div className="flex gap-2 mb-6 flex-wrap" data-ocid="problems.tab">
+          <div
+            id="compiler-section"
+            className="flex gap-2 mb-6 flex-wrap"
+            data-ocid="problems.tab"
+          >
             <button
               type="button"
               onClick={() => setActiveTab("problems")}

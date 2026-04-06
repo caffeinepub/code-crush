@@ -43,6 +43,30 @@ interface PistonResult {
   version: string;
 }
 
+// ─── Judge0 Language IDs ───────────────────────────────────────────────────────
+const JUDGE0_LANGUAGE_IDS: Record<string, number> = {
+  python: 71,
+  javascript: 63,
+  typescript: 74,
+  java: 62,
+  c: 50,
+  cpp: 54,
+  csharp: 51,
+  go: 60,
+  rust: 73,
+  ruby: 72,
+  php: 68,
+  swift: 83,
+  kotlin: 78,
+  r: 80,
+  bash: 46,
+  perl: 85,
+  lua: 64,
+  scala: 81,
+  haskell: 61,
+  elixir: 57,
+};
+
 // ─── Language Config ───────────────────────────────────────────────────────────
 const LANGUAGES = [
   { id: "python", name: "Python", emoji: "🐍" },
@@ -581,23 +605,48 @@ export default function MultiLangCompiler() {
     const start = Date.now();
 
     try {
-      const res = await fetch("https://emkc.org/api/v2/piston/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          language,
-          version: "*",
-          files: [{ content: code }],
-          stdin,
-        }),
-      });
+      const langId = JUDGE0_LANGUAGE_IDS[language] ?? 71;
+      const res = await fetch(
+        "https://ce.judge0.com/submissions?base64_encoded=false&wait=true",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source_code: code,
+            language_id: langId,
+            stdin: stdin || "",
+          }),
+        },
+      );
 
       if (!res.ok) {
         throw new Error(`API responded with ${res.status}`);
       }
 
-      const data = (await res.json()) as PistonResult;
-      setResult(data);
+      const data = await res.json();
+      // Normalize Judge0 response to PistonResult shape
+      const isCompileError = data.compile_output && data.status?.id !== 3;
+      const normalized: PistonResult = {
+        run: {
+          stdout: data.stdout || "",
+          stderr: data.stderr || "",
+          code: data.status?.id === 3 ? 0 : 1,
+          signal: null,
+          output: data.stdout || "",
+        },
+        compile: isCompileError
+          ? {
+              stdout: "",
+              stderr: data.compile_output || "",
+              code: 1,
+              signal: null,
+              output: data.compile_output || "",
+            }
+          : undefined,
+        language: language,
+        version: "*",
+      };
+      setResult(normalized);
       setRunTime(Date.now() - start);
     } catch {
       setError("Could not connect to compiler. Please try again.");
@@ -660,7 +709,7 @@ export default function MultiLangCompiler() {
               Multi-Language Compiler
             </h2>
             <p className="text-[11px] text-gray-500">
-              20 languages · Powered by Piston API
+              20 languages · Powered by Judge0
             </p>
           </div>
         </div>

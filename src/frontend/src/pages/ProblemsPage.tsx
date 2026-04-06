@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  ArrowLeft,
   BookOpen,
   Calendar,
   ChevronRight,
@@ -19,6 +20,9 @@ import ProjectsSection from "../components/ProjectsSection";
 import { useApp } from "../context/AppContext";
 import { COMPANION_PRESETS } from "../data/companions";
 import { CODING_PROBLEMS, type CodingProblem } from "../data/problems";
+import CodeVisualizationPage from "./CodeVisualizationPage";
+
+type ActivePage = null | "problems" | "projects" | "compiler" | "visualizer";
 
 const ACHIEVEMENTS = [
   { icon: "🚀", name: "First Steps", desc: "Complete your first problem" },
@@ -635,20 +639,282 @@ function ProblemSolver({ problem }: { problem: CodingProblem }) {
   );
 }
 
+// ─── Page Header with Back Button ─────────────────────────────────────────────
+function PageHeader({
+  title,
+  emoji,
+  subtitle,
+  onBack,
+  gradientFrom,
+  gradientTo,
+}: {
+  title: string;
+  emoji: string;
+  subtitle: string;
+  onBack: () => void;
+  gradientFrom: string;
+  gradientTo: string;
+}) {
+  return (
+    <header
+      className="shrink-0 px-4 py-3 flex items-center gap-3"
+      style={{
+        background: `linear-gradient(135deg, ${gradientFrom} 0%, ${gradientTo} 100%)`,
+        borderBottom: "1px solid rgba(255,255,255,0.15)",
+      }}
+    >
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onBack}
+        className="rounded-xl text-white/80 hover:text-white hover:bg-white/15 shrink-0"
+        data-ocid="problems.back_button"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
+      <div
+        className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
+        style={{ background: "rgba(255,255,255,0.2)" }}
+      >
+        {emoji}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h1 className="font-extrabold text-white text-base leading-tight truncate">
+          {title}
+        </h1>
+        <p className="text-[11px] text-white/70 truncate">{subtitle}</p>
+      </div>
+    </header>
+  );
+}
+
+// ─── Sub-pages ────────────────────────────────────────────────────────────────
+function ProblemsSubPage({
+  onBack,
+  onStartProblem,
+}: {
+  onBack: () => void;
+  onStartProblem: (id: string) => void;
+}) {
+  return (
+    <div className="h-screen bg-[#fdf2f6] flex flex-col overflow-hidden">
+      <PageHeader
+        title="Coding Problems"
+        emoji="🧩"
+        subtitle="Solve real challenges with AI hints"
+        onBack={onBack}
+        gradientFrom="#10b981"
+        gradientTo="#0d9488"
+      />
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-5">
+          <div className="grid sm:grid-cols-2 gap-4 mb-10">
+            {CODING_PROBLEMS.map((problem) => (
+              <ProblemCard
+                key={problem.id}
+                problem={problem}
+                onStart={() => onStartProblem(problem.id)}
+              />
+            ))}
+          </div>
+          <div>
+            <h3 className="text-xl font-extrabold text-foreground mb-4 flex items-center gap-2">
+              🏆 Achievements
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {ACHIEVEMENTS.map((ach) => (
+                <div
+                  key={ach.name}
+                  className="bg-card rounded-2xl p-4 border border-border text-center opacity-60"
+                >
+                  <div className="text-2xl mb-1">{ach.icon}</div>
+                  <div className="text-xs font-bold text-foreground">
+                    {ach.name}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    {ach.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <BottomNav />
+    </div>
+  );
+}
+
+function ProjectsSubPage({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="h-screen bg-[#fdf2f6] flex flex-col overflow-hidden">
+      <PageHeader
+        title="Project-Based Learning"
+        emoji="🛠️"
+        subtitle="Build real projects step by step"
+        onBack={onBack}
+        gradientFrom="#f97316"
+        gradientTo="#ef4444"
+      />
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-5">
+          <ProjectsSection />
+        </div>
+      </div>
+      <BottomNav />
+    </div>
+  );
+}
+
+function CompilerSubPage({ onBack }: { onBack: () => void }) {
+  return (
+    <div
+      className="h-screen flex flex-col overflow-hidden"
+      style={{ background: "#0d1117" }}
+    >
+      <PageHeader
+        title="Multi-Language Compiler"
+        emoji="💻"
+        subtitle="20+ languages · Judge0 powered · Auto-save"
+        onBack={onBack}
+        gradientFrom="#0891b2"
+        gradientTo="#2563eb"
+      />
+      <div
+        className="flex-1 overflow-y-auto px-4 pt-5"
+        style={{ background: "#0d1117" }}
+      >
+        <MultiLangCompiler />
+      </div>
+      <div style={{ background: "#0d1117" }}>
+        <BottomNav />
+      </div>
+    </div>
+  );
+}
+
+function VisualizerSubPage({ onBack }: { onBack: () => void }) {
+  // CodeVisualizationPage has its own BottomNav and header — we wrap it
+  // and inject a back button by overlaying it at the top
+  return (
+    <div className="h-screen flex flex-col overflow-hidden relative">
+      {/* Overlay back button strip */}
+      <div
+        className="shrink-0 flex items-center gap-2 px-3 py-2 z-10"
+        style={{
+          background:
+            "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)",
+          borderBottom: "1px solid rgba(139,92,246,0.3)",
+        }}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="rounded-xl text-white/80 hover:text-white hover:bg-white/15 w-8 h-8"
+          data-ocid="visualizer.back_button"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+        <span className="text-white/70 text-xs font-semibold">
+          ← Back to Code Studio
+        </span>
+      </div>
+      {/* Visualizer fills the rest */}
+      <div className="flex-1 overflow-hidden">
+        <CodeVisualizationPage />
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Export ──────────────────────────────────────────────────────────────
 export default function ProblemsPage() {
-  const { currentProblemId, setCurrentProblemId, setPage } = useApp();
-  const [activeTab, setActiveTab] = useState<
-    "problems" | "projects" | "compiler"
-  >("problems");
+  const { currentProblemId, setCurrentProblemId } = useApp();
+  const [activePage, setActivePage] = useState<ActivePage>(null);
 
   const currentProblem = currentProblemId
     ? CODING_PROBLEMS.find((p) => p.id === currentProblemId)
     : null;
 
+  // If a specific problem is open, show the solver view
   if (currentProblem) {
     return <ProblemSolver problem={currentProblem} />;
   }
 
+  // Full-page sub-views
+  if (activePage === "problems") {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="problems-page"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.22 }}
+          className="h-screen"
+        >
+          <ProblemsSubPage
+            onBack={() => setActivePage(null)}
+            onStartProblem={(id) => setCurrentProblemId(id)}
+          />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  if (activePage === "projects") {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="projects-page"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.22 }}
+          className="h-screen"
+        >
+          <ProjectsSubPage onBack={() => setActivePage(null)} />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  if (activePage === "compiler") {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="compiler-page"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.22 }}
+          className="h-screen"
+        >
+          <CompilerSubPage onBack={() => setActivePage(null)} />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  if (activePage === "visualizer") {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="visualizer-page"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.22 }}
+          className="h-screen"
+        >
+          <VisualizerSubPage onBack={() => setActivePage(null)} />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  // ── Banner List (default view) ──────────────────────────────────────────────
   return (
     <div className="h-screen bg-[#fdf2f6] flex flex-col overflow-hidden">
       {/* Header */}
@@ -668,12 +934,14 @@ export default function ProblemsPage() {
             </p>
           </div>
 
-          {/* Code Visualizer Banner — always visible above tabs */}
-          <button
+          {/* Code Visualizer Banner */}
+          <motion.button
             type="button"
-            onClick={() => setPage("code-visualizer" as any)}
-            className="w-full mb-5 bg-gradient-to-r from-violet-500 to-pink-500 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
-            data-ocid="problems.button"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setActivePage("visualizer")}
+            className="w-full mb-5 bg-gradient-to-r from-violet-500 to-pink-500 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-shadow"
+            data-ocid="problems.visualizer.button"
           >
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
               🔍
@@ -688,21 +956,16 @@ export default function ProblemsPage() {
               </div>
             </div>
             <div className="text-white/60 text-lg">&rsaquo;</div>
-          </button>
+          </motion.button>
 
-          {/* Compiler Banner — quick-jump to the compiler tab */}
-          <button
+          {/* Compiler Banner */}
+          <motion.button
             type="button"
-            onClick={() => {
-              setActiveTab("compiler");
-              setTimeout(() => {
-                document
-                  .getElementById("compiler-section")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
-            }}
-            className="w-full mb-5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
-            data-ocid="compiler.banner"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setActivePage("compiler")}
+            className="w-full mb-5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-shadow"
+            data-ocid="problems.compiler.button"
           >
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
               💻
@@ -717,110 +980,55 @@ export default function ProblemsPage() {
               </div>
             </div>
             <div className="text-white/60 text-lg">&rsaquo;</div>
-          </button>
+          </motion.button>
 
-          {/* Tab switcher */}
-          <div
-            id="compiler-section"
-            className="flex gap-2 mb-6 flex-wrap"
-            data-ocid="problems.tab"
+          {/* Problems Banner */}
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setActivePage("problems")}
+            className="w-full mb-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-shadow"
+            data-ocid="problems.banner"
           >
-            <button
-              type="button"
-              onClick={() => setActiveTab("problems")}
-              data-ocid="problems.tab"
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${activeTab === "problems" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"}`}
-            >
-              🧩 Problems
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("projects")}
-              data-ocid="projects.tab"
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${activeTab === "projects" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"}`}
-            >
-              🛠️ Projects
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("compiler")}
-              data-ocid="compiler.tab"
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${activeTab === "compiler" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-card text-muted-foreground border-border hover:border-primary hover:text-primary"}`}
-            >
-              💻 Compiler
-            </button>
-          </div>
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
+              🧩
+            </div>
+            <div className="flex-1">
+              <div className="text-white font-extrabold text-base">
+                Coding Problems
+              </div>
+              <div className="text-white/80 text-xs mt-0.5">
+                Solve real coding challenges with hints and your AI companion by
+                your side
+              </div>
+            </div>
+            <div className="text-white/60 text-lg">&rsaquo;</div>
+          </motion.button>
 
-          {/* Tab content */}
-          <AnimatePresence mode="wait">
-            {activeTab === "problems" && (
-              <motion.div
-                key="problems"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.18 }}
-              >
-                {/* Problem grid */}
-                <div className="grid sm:grid-cols-2 gap-4 mb-10">
-                  {CODING_PROBLEMS.map((problem) => (
-                    <ProblemCard
-                      key={problem.id}
-                      problem={problem}
-                      onStart={() => setCurrentProblemId(problem.id)}
-                    />
-                  ))}
-                </div>
-
-                {/* Achievements */}
-                <div>
-                  <h3 className="text-xl font-extrabold text-foreground mb-4 flex items-center gap-2">
-                    🏆 Achievements
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {ACHIEVEMENTS.map((ach) => (
-                      <div
-                        key={ach.name}
-                        className="bg-card rounded-2xl p-4 border border-border text-center opacity-60"
-                      >
-                        <div className="text-2xl mb-1">{ach.icon}</div>
-                        <div className="text-xs font-bold text-foreground">
-                          {ach.name}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          {ach.desc}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-            {activeTab === "projects" && (
-              <motion.div
-                key="projects"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.18 }}
-              >
-                <ProjectsSection />
-              </motion.div>
-            )}
-            {activeTab === "compiler" && (
-              <motion.div
-                key="compiler"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.18 }}
-                className="rounded-2xl border border-[#3a3a55] p-5"
-                style={{ background: "#0d0d1a" }}
-              >
-                <MultiLangCompiler />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Projects Banner */}
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setActivePage("projects")}
+            className="w-full mb-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-left flex items-center gap-4 shadow-lg hover:shadow-xl transition-shadow"
+            data-ocid="projects.banner"
+          >
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
+              🛠️
+            </div>
+            <div className="flex-1">
+              <div className="text-white font-extrabold text-base">
+                Project-Based Learning
+              </div>
+              <div className="text-white/80 text-xs mt-0.5">
+                Build real projects step-by-step with tasks, hints, and
+                companion guidance
+              </div>
+            </div>
+            <div className="text-white/60 text-lg">&rsaquo;</div>
+          </motion.button>
         </div>
       </div>
 

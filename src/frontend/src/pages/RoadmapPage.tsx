@@ -9,13 +9,22 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { ROADMAPS, type Roadmap } from "../data/roadmaps";
+import VideoPlayerPage from "./VideoPlayerPage";
 
 type View = "list" | "roadmap";
+
+interface ActiveVideo {
+  url: string;
+  label: string;
+  topicTitle: string;
+  topicNotes: string;
+}
 
 export default function RoadmapPage() {
   const [view, setView] = useState<View>("list");
   const [selectedRoadmap, setSelectedRoadmap] = useState<Roadmap | null>(null);
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
+  const [activeVideo, setActiveVideo] = useState<ActiveVideo | null>(null);
   const [completedTopics, setCompletedTopics] = useState<
     Record<string, boolean>
   >(() => {
@@ -55,6 +64,19 @@ export default function RoadmapPage() {
     Intermediate: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
     Advanced: "text-red-400 bg-red-500/10 border-red-500/20",
   };
+
+  // --- VIDEO PLAYER VIEW ---
+  if (activeVideo) {
+    return (
+      <VideoPlayerPage
+        videoUrl={activeVideo.url}
+        videoLabel={activeVideo.label}
+        topicTitle={activeVideo.topicTitle}
+        topicNotes={activeVideo.topicNotes}
+        onBack={() => setActiveVideo(null)}
+      />
+    );
+  }
 
   // --- DOMAIN LIST VIEW ---
   if (view === "list") {
@@ -249,21 +271,28 @@ export default function RoadmapPage() {
                                   </div>
                                   <div className="space-y-1.5">
                                     {topic.videos.map((v) => (
-                                      <a
+                                      <button
                                         key={v.url}
-                                        href={v.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2 hover:bg-accent border border-border transition-colors"
+                                        type="button"
+                                        onClick={() =>
+                                          setActiveVideo({
+                                            url: v.url,
+                                            label: v.label,
+                                            topicTitle: topic.title,
+                                            topicNotes: topic.notes,
+                                          })
+                                        }
+                                        className="w-full flex items-center gap-2 rounded-xl bg-muted px-3 py-2 hover:bg-accent border border-border transition-colors text-left"
+                                        data-ocid="roadmap.primary_button"
                                       >
                                         <span className="text-sm">▶️</span>
                                         <span className="text-xs font-medium text-foreground flex-1">
                                           {v.label}
                                         </span>
-                                        <span className="text-xs text-muted-foreground">
-                                          ↗
+                                        <span className="text-xs text-primary font-semibold">
+                                          Watch
                                         </span>
-                                      </a>
+                                      </button>
                                     ))}
                                   </div>
                                 </div>

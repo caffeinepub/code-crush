@@ -1,22 +1,28 @@
 # Code & Crush
 
 ## Current State
-ProblemsPage has: problem list, problem solver with JS-only editor, Code Visualizer banner (navigates to CodeVisualizationPage), and Projects section. The code editor is JS-only with no execution engine and no way to save code snippets.
+In RoadmapPage.tsx, video links in each topic open YouTube in a new tab (`target="_blank"`). There is no in-app video player, no chatbot tied to videos, and no video summary feature.
 
 ## Requested Changes (Diff)
 
 ### Add
-- **MultiLang Compiler** component: a full-featured code editor + runner supporting 20+ languages (Python, Java, C, C++, JavaScript, TypeScript, Go, Rust, Ruby, PHP, Swift, Kotlin, R, C#, Bash, etc.) using the free Piston API (https://emkc.org/api/v2/piston/execute). Features: language selector dropdown, code editor with line numbers, stdin input, Run button, output panel showing stdout/stderr/exit code, execution status badge.
-- **Code Storage** feature: a "My Saved Codes" panel inside the compiler that lets users save named snippets to localStorage. Shows list of saved snippets (name, language, date). Click to load. Delete option.
-- **Placement**: Compiler lives as a new tab in ProblemsPage (alongside Problems, Projects). Code Visualizer banner stays above the tabs so it remains easy to reach from any tab.
+- A `VideoPlayerModal` component that opens when a video link is clicked (instead of navigating to YouTube)
+- YouTube embed player inside the modal using the video URL converted to an embed URL
+- An AI chatbot panel beside the video (sidebar on desktop, below on mobile) where the user can ask questions about the video topic
+- A "Get Summary" button that generates a summary of the video topic using the companion AI (OpenAI/Claude if key set, else local fallback based on topic title)
+- Summary displayed as a card below the video or in the chatbot panel
 
 ### Modify
-- `ProblemsPage.tsx`: Add a 3rd tab "💻 Compiler" next to Problems and Projects. Render the new MultiLangCompiler component on that tab. Move the Code Visualizer banner above the tab bar so it's always visible.
+- In RoadmapPage.tsx: change all video `<a>` tags from `target="_blank"` to `onClick` handlers that open the in-app VideoPlayerModal
+- Pass the video URL, label, and topic context to the modal so the chatbot and summary are context-aware
 
 ### Remove
-- Nothing removed.
+- `target="_blank"` / `rel="noopener noreferrer"` from video links (they now open in-app)
 
 ## Implementation Plan
-1. Create `src/frontend/src/components/MultiLangCompiler.tsx` — language selector, editor, stdin, run via Piston API, output panel, loading/error states.
-2. Create `src/frontend/src/components/CodeStorage.tsx` — save/load/delete snippets from localStorage, rendered as a collapsible sidebar inside the compiler.
-3. Update `ProblemsPage.tsx` — add "Compiler" tab, import and render the new component, keep Code Visualizer banner visible above tabs.
+1. Create `VideoPlayerPage.tsx` (full-page view with back button, embedded YouTube player, AI chatbot panel, and summary button)
+2. Extract YouTube video ID from URL for embed
+3. Add `openVideo` state in RoadmapPage.tsx to render VideoPlayerPage when a video is selected
+4. VideoPlayerPage layout: top = YouTube iframe embed, right/bottom = chatbot + summary panel
+5. Chatbot uses OpenAI/Claude if API key is in localStorage, else provides topic-based fallback responses
+6. "Get Summary" uses AI to summarize what the video is about based on title + topic context, or shows a static summary fallback

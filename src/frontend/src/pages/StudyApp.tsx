@@ -15,7 +15,6 @@ import {
   Play,
   Send,
   Settings,
-  Terminal,
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -600,13 +599,7 @@ const TypingIndicator = ({ companionImg }: { companionImg: string }) => (
   </div>
 );
 
-type BottomTab =
-  | "chat"
-  | "modules"
-  | "events"
-  | "problems"
-  | "dashboard"
-  | "compiler";
+type BottomTab = "chat" | "modules" | "events" | "problems" | "dashboard";
 
 const COMPANION_COLORS: Record<string, { bubble: string; border: string }> = {
   sakura: {
@@ -1418,11 +1411,6 @@ export default function StudyApp() {
     { tab: "events", icon: <Calendar className="w-5 h-5" />, label: "Events" },
     { tab: "problems", icon: <Code className="w-5 h-5" />, label: "Problems" },
     {
-      tab: "compiler",
-      icon: <Terminal className="w-5 h-5" />,
-      label: "Compiler",
-    },
-    {
       tab: "dashboard",
       icon: <LayoutDashboard className="w-5 h-5" />,
       label: "Dashboard",
@@ -1433,10 +1421,6 @@ export default function StudyApp() {
     if (tab === "problems") {
       setCurrentProblemId(null);
       setPage("problems");
-      return;
-    }
-    if (tab === "compiler") {
-      setPage("compiler");
       return;
     }
     setActiveTab(tab);

@@ -15,7 +15,8 @@ export type AppPage =
   | "problems"
   | "dashboard"
   | "events"
-  | "code-visualizer";
+  | "code-visualizer"
+  | "compiler";
 
 export type AppTheme =
   | "default"

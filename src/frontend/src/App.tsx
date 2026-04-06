@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoveCallModal from "./components/LoveCallModal";
 import { AppProvider, useApp } from "./context/AppContext";
 import CodeVisualizationPage from "./pages/CodeVisualizationPage";
+import CompilerPage from "./pages/CompilerPage";
 import DashboardPage from "./pages/DashboardPage";
 import EventsPage from "./pages/EventsPage";
 import LandingPage from "./pages/LandingPage";
@@ -28,6 +29,7 @@ function AppRouter() {
       {page === "dashboard" && <DashboardPage />}
       {page === "events" && <EventsPage />}
       {page === "code-visualizer" && <CodeVisualizationPage />}
+      {page === "compiler" && <CompilerPage />}
       <LoveCallModal />
       <Toaster />
     </>

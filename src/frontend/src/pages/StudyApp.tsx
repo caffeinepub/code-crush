@@ -7,8 +7,6 @@ import {
   BookOpen,
   Calendar,
   Code,
-  ExternalLink,
-  FileText,
   Flame,
   Home,
   LayoutDashboard,
@@ -28,6 +26,7 @@ import { useAddMessage } from "../hooks/useQueries";
 import { useResponseQueue } from "../hooks/useResponseQueue";
 import DashboardPage from "./DashboardPage";
 import EventsPage from "./EventsPage";
+import RoadmapPage from "./RoadmapPage";
 
 const XP_PER_LEVEL = 100;
 
@@ -763,7 +762,6 @@ export default function StudyApp() {
   const [conversationHistory, setConversationHistory] = useState<
     Array<{ role: "user" | "assistant"; content: string }>
   >([]);
-  const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [moduleQuiz, setModuleQuiz] = useState<ModuleQuizState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const addMessageMutation = useAddMessage();
@@ -1350,6 +1348,7 @@ export default function StudyApp() {
   }, []);
 
   // Module Quiz handlers
+  // biome-ignore lint/correctness/noUnusedVariables: kept for potential quiz re-use
   const startModuleQuiz = (moduleId: string) => {
     setModuleQuiz({
       moduleId,
@@ -1404,7 +1403,11 @@ export default function StudyApp() {
     label: string;
   }[] = [
     { tab: "chat", icon: <Home className="w-5 h-5" />, label: "Chat" },
-    { tab: "modules", icon: <BookOpen className="w-5 h-5" />, label: "Study" },
+    {
+      tab: "modules",
+      icon: <BookOpen className="w-5 h-5" />,
+      label: "Roadmap",
+    },
     { tab: "events", icon: <Calendar className="w-5 h-5" />, label: "Events" },
     { tab: "problems", icon: <Code className="w-5 h-5" />, label: "Problems" },
     {
@@ -1653,115 +1656,7 @@ export default function StudyApp() {
 
         {/* Center: Main Panel */}
         <main className="flex-1 flex flex-col min-w-0">
-          {/* Study Modules */}
-          {activeTab === "modules" && (
-            <div className="flex-1 overflow-y-auto p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-                Study Modules
-              </p>
-              <div className="space-y-3 max-w-2xl mx-auto pb-20">
-                {STUDY_MODULES.map((mod) => (
-                  <div
-                    key={mod.id}
-                    data-ocid={`modules.${mod.id}.panel`}
-                    className="rounded-2xl border border-border bg-card overflow-hidden"
-                  >
-                    <button
-                      type="button"
-                      data-ocid={`modules.${mod.id}.toggle`}
-                      className="w-full flex items-center justify-between p-4 text-left"
-                      onClick={() =>
-                        setExpandedModule(
-                          expandedModule === mod.id ? null : mod.id,
-                        )
-                      }
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{mod.icon}</span>
-                        <div>
-                          <div className="font-bold text-foreground text-sm">
-                            {mod.title}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {mod.description}
-                          </div>
-                          <span
-                            className={`text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block ${mod.diffColor}`}
-                          >
-                            {mod.difficulty}
-                          </span>
-                        </div>
-                      </div>
-                      <motion.span
-                        animate={{
-                          rotate: expandedModule === mod.id ? 180 : 0,
-                        }}
-                        transition={{ duration: 0.2 }}
-                        className="text-muted-foreground text-lg shrink-0"
-                      >
-                        ▾
-                      </motion.span>
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {expandedModule === mod.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-4 pb-4 space-y-3">
-                            {/* Topics */}
-                            <div className="flex flex-wrap gap-1.5">
-                              {mod.topics.map((t) => (
-                                <span
-                                  key={t}
-                                  className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
-                                >
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                            {/* Resources */}
-                            <div className="space-y-2">
-                              {mod.resources.map((r) => (
-                                <a
-                                  key={r.url}
-                                  href={r.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-3 bg-muted rounded-xl px-3 py-2.5 hover:bg-accent transition-colors border border-border"
-                                >
-                                  {r.type === "pdf" ? (
-                                    <FileText className="w-4 h-4 text-blue-400 shrink-0" />
-                                  ) : (
-                                    <Play className="w-4 h-4 text-red-400 shrink-0" />
-                                  )}
-                                  <span className="text-sm font-medium text-foreground flex-1">
-                                    {r.label}
-                                  </span>
-                                  <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
-                                </a>
-                              ))}
-                            </div>
-                            {/* Quiz Button */}
-                            <Button
-                              data-ocid={`modules.${mod.id}.quiz.button`}
-                              onClick={() => startModuleQuiz(mod.id)}
-                              className="w-full rounded-xl h-10 bg-primary text-primary-foreground font-semibold"
-                            >
-                              📝 Take Quiz ({mod.quiz.length} questions)
-                            </Button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeTab === "modules" && <RoadmapPage />}
 
           {/* Events Tab */}
           {activeTab === "events" && <EventsPage />}

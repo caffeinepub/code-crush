@@ -690,9 +690,7 @@ function ArrayVisualizer({
 
               {/* Bar itself */}
               <motion.div
-                // biome-ignore lint/suspicious/noArrayIndexKey: nested bar key
                 key={`bar-${idx}`}
-                // biome-ignore lint/suspicious/noArrayIndexKey: positional bar key
                 animate={{
                   height: barH,
                   backgroundColor: barColor,

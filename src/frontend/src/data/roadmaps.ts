@@ -1,3 +1,5 @@
+import { C_PROGRAMMING_ROADMAP_ENTRY } from "./cProgrammingCourse";
+
 export interface DocLink {
   label: string;
   url: string;
@@ -22,6 +24,8 @@ export interface Roadmap {
   tagColor: string;
   description: string;
   topics: RoadmapTopic[];
+  level?: string;
+  isCourse?: true;
 }
 
 export const ROADMAPS: Roadmap[] = [
@@ -1789,4 +1793,5 @@ export const ROADMAPS: Roadmap[] = [
       },
     ],
   },
+  C_PROGRAMMING_ROADMAP_ENTRY,
 ];

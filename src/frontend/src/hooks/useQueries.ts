@@ -1,17 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Personality } from "../backend";
 import type { PersonalityType } from "../data/companions";
-import { useActor } from "./useActor";
 
-const toBackendPersonality = (p: PersonalityType): Personality => {
-  const map: Partial<Record<PersonalityType, Personality>> = {
-    encouraging: Personality.encouraging,
-    witty: Personality.witty,
-    calm: Personality.calm,
-    playful: Personality.playful,
-  };
-  return map[p] ?? Personality.encouraging;
-};
+// Stub actor hook — backend bindings not yet generated
+function useActor() {
+  return { actor: null as null, isFetching: false };
+}
 
 export function useGetProfile(username: string) {
   const { actor, isFetching } = useActor();
@@ -19,7 +12,7 @@ export function useGetProfile(username: string) {
     queryKey: ["profile", username],
     queryFn: async () => {
       if (!actor || !username) return null;
-      return actor.getOrCreateProfile(username);
+      return null;
     },
     enabled: !!actor && !isFetching && !!username,
   });
@@ -31,7 +24,7 @@ export function useGetHistory() {
     queryKey: ["history"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getHistory();
+      return [];
     },
     enabled: !!actor && !isFetching,
   });
@@ -40,12 +33,11 @@ export function useGetHistory() {
 export function useUpdateCompanion() {
   const { actor } = useActor();
   return useMutation({
-    mutationFn: async ({
-      name,
-      personality,
-    }: { name: string; personality: PersonalityType }) => {
+    mutationFn: async (_args: {
+      name: string;
+      personality: PersonalityType;
+    }) => {
       if (!actor) return;
-      await actor.updateCompanion(name, toBackendPersonality(personality));
     },
   });
 }
@@ -53,9 +45,8 @@ export function useUpdateCompanion() {
 export function useAddMessage() {
   const { actor } = useActor();
   return useMutation({
-    mutationFn: async ({ role, text }: { role: string; text: string }) => {
+    mutationFn: async (_args: { role: string; text: string }) => {
       if (!actor) return;
-      await actor.addMessage(role, text);
     },
   });
 }
@@ -65,7 +56,6 @@ export function useUpdateXP() {
   return useMutation({
     mutationFn: async (_args: { xp: number }) => {
       if (!actor) return;
-      await actor.getAllStats();
     },
   });
 }
@@ -73,9 +63,8 @@ export function useUpdateXP() {
 export function useAwardBadge() {
   const { actor } = useActor();
   return useMutation({
-    mutationFn: async (badgeId: string) => {
+    mutationFn: async (_badgeId: string) => {
       if (!actor) return;
-      await actor.awardBadge(badgeId);
     },
   });
 }

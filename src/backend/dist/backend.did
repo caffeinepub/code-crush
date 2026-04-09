@@ -1,0 +1,47 @@
+type UserProfile = 
+ record {
+   badges: vec text;
+   burnoutScore: nat;
+   companionName: text;
+   completedTopics: vec text;
+   lastActive: int;
+   level: nat;
+   messagesSent: nat;
+   personality: Personality;
+   streakDays: nat;
+   username: text;
+   xp: nat;
+ };
+type Question = 
+ record {
+   answers: vec text;
+   correctIndex: nat;
+   difficulty: nat;
+   "text": text;
+   topic: text;
+   xpReward: nat;
+ };
+type Personality = 
+ variant {
+   calm;
+   encouraging;
+   playful;
+   witty;
+ };
+type Message = 
+ record {
+   role: text;
+   "text": text;
+   timestamp: int;
+ };
+service : {
+  addMessage: (role: text, "text": text) -> ();
+  addSampleQuestions: () -> ();
+  awardBadge: (badgeId: text) -> ();
+  completeTopic: (topicId: text) -> ();
+  getAllStats: () -> (UserProfile) query;
+  getHistory: () -> (vec Message) query;
+  getOrCreateProfile: (username: text) -> (UserProfile);
+  getQuestionsByTopic: (topic: text) -> (vec Question) query;
+  updateCompanion: (name: text, personality: Personality) -> ();
+}
